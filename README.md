@@ -10,7 +10,7 @@ Create reliable file transfer using UDP protocol.
 - Pause and resume paused/aborted downloads
 - Server should be able to send several files at the same time
 - Prove that the file you download from the server is exactly the same as the one on the server, and the other way around (data integrity).
-- Your client should be able to find the Raspberry Pi without providing an IP address. A multi-cast DNS protocol must be used.
+- Your client should be able to find the Raspberry Pi without providing an IP address. A [multi-cast DNS](https://tools.ietf.org/html/rfc6762) protocol must be used.
 - You should be able to provide statistics about download speeds, packet loss, retransmissions, etc.
 - Provide a README with your code.
 
