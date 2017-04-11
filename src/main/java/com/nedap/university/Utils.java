@@ -3,6 +3,7 @@ package com.nedap.university;
 import java.util.Formatter;
 
 /**
+ * Utils class with tiny helpful functions
  * Created by anne-greeth.vanherwijnen on 10/04/2017.
  */
 public class Utils {
@@ -23,4 +24,9 @@ public class Utils {
         }
         return (int) value;
     }
+
+    public static byte[] StringArraytoByteArray(String[] strings){
+        return new byte[]{};
+    }
+
 }

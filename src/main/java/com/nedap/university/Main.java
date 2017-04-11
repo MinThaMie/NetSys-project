@@ -1,7 +1,5 @@
 package com.nedap.university;
 
-import java.io.*;
-
 public class Main {
 
     private static boolean keepAlive = true;
@@ -17,6 +15,8 @@ public class Main {
 
         if(isPi){
             Pi.init();
+        } else {
+            Client.init();
         }
 
         while (keepAlive) {
@@ -24,7 +24,7 @@ public class Main {
                 if(isPi){
                     Pi.runPi();
                 } else {
-                    Client.runClient();
+                    //Client.runClient();
                 }
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
@@ -35,24 +35,6 @@ public class Main {
 
         System.out.println("Stopped");
         running = false;
-    }
-
-    private static void createFolder(String folder){
-        File file = new File(folder);
-        if (!file.exists()) {
-            if (file.mkdir()) {
-                System.out.println("Directory is created!");
-            } else {
-                System.out.println("Failed to create directory!");
-            }
-        } else {
-            System.out.println("Directory " + folder + " already exists");
-        }
-    }
-
-    private static String[] getFiles(String folder){
-        File file = new File(folder);
-        return file.list();
     }
 
     private static void initShutdownHook() {
