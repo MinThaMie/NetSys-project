@@ -12,9 +12,9 @@ import java.util.Arrays;
 public class Packet {
     private UDPHeader header;
     private byte[] data;
-    private static int HEADERLENGTH = 136; //17 bytes
-    public Packet(String sourceAdr, int sourceport, int destport, Flag[] flags, byte[] data){
-        this.header = new UDPHeader(sourceAdr, sourceport,destport,Flag.setFlags(flags),data);
+    private static int HEADERLENGTH = 13; //in Bytes
+    public Packet(int sourceport, int destport, Flag[] flags, int seqNo, int ackNo, byte[] data){
+        this.header = new UDPHeader(sourceport,destport,Flag.setFlags(flags), seqNo, ackNo ,data);
         this.data = data;
     }
 
@@ -25,7 +25,7 @@ public class Packet {
 
     public static void main(String[] args) {
         byte[] mydata = "test".getBytes();
-        Packet myPacket = new Packet("192.168.40.5", 8080, 9292, new Flag[]{Flag.ACK}, mydata);
+        Packet myPacket = new Packet( 8080, 9292, new Flag[]{Flag.ACK},1, 0, mydata);
         Packet testPacket = myPacket.bytesToPacket(getByteRepresentation(myPacket));
         testPacket.print();
     }
@@ -56,33 +56,28 @@ public class Packet {
     }
 
     public static Packet bytesToPacket(byte[] packet){
-        byte[] headerBytes = Arrays.copyOfRange(packet, 0, HEADERLENGTH/8);
+        byte[] headerBytes = Arrays.copyOfRange(packet, 0, HEADERLENGTH);
         UDPHeader header = headerBytesToHeader(headerBytes);
-        byte[] data = Arrays.copyOfRange(packet, HEADERLENGTH/8, packet.length);
+        byte[] data = Arrays.copyOfRange(packet, HEADERLENGTH, packet.length);
         return new Packet(header, data);
     }
 
     public static UDPHeader headerBytesToHeader(byte[] header){
-        String sourceAddr= "";
-        try {
-            sourceAddr = InetAddress.getByAddress(Arrays.copyOfRange(header, 0, 4)).getHostAddress();
-        } catch (UnknownHostException e){
-            System.out.println("The host does not exist or the computation from bytes to address went wrong");
-        }
-        int sourcePort = Utils.bytesToInt(Arrays.copyOfRange(header, 4, 6));
-        int destPort = Utils.bytesToInt(Arrays.copyOfRange(header, 6, 8));
-        int udpLength = Utils.bytesToInt(Arrays.copyOfRange(header, 8, 10));
-        int flags  = Utils.bytesToInt(Arrays.copyOfRange(header, 10, 11));
-        int seqNo = Utils.bytesToInt(Arrays.copyOfRange(header, 11, 13));
-        int ackNo = Utils.bytesToInt(Arrays.copyOfRange(header, 13, 15));
-        int checksum = Utils.bytesToInt(Arrays.copyOfRange(header, 15, 17));
-        UDPHeader newHeader = new UDPHeader(sourceAddr,sourcePort, destPort, udpLength, flags, seqNo, ackNo, checksum);
-        return newHeader;
+        int sourcePort = Utils.bytesToInt(Arrays.copyOfRange(header, 0, 2));
+        int destPort = Utils.bytesToInt(Arrays.copyOfRange(header, 2, 4));
+        int udpLength = Utils.bytesToInt(Arrays.copyOfRange(header, 4, 6));
+        int flags  = Utils.bytesToInt(Arrays.copyOfRange(header, 6, 7));
+        int seqNo = Utils.bytesToInt(Arrays.copyOfRange(header, 7, 9));
+        int ackNo = Utils.bytesToInt(Arrays.copyOfRange(header, 9, 11));
+        int checksum = Utils.bytesToInt(Arrays.copyOfRange(header, 11, 13));
+        return new UDPHeader(sourcePort, destPort, udpLength, flags, seqNo, ackNo, checksum);
     }
 
     public void print(){
-        System.out.println("This packet: " + this.getHeader().sourceAddress + " " + this.getHeader().sourceport + " " +this.getHeader().destport + " " + this.getHeader().flags);
+        System.out.println("This packet: "  + this.getHeader().sourceport + " " +this.getHeader().destport + " " + this.getHeader().flags);
     }
+
+
 
 
 }

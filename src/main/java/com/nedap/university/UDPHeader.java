@@ -10,7 +10,6 @@ import java.net.UnknownHostException;
  */
 public class UDPHeader{
     private static int HEADERLENGTH = 136; //17 bytes
-    String sourceAddress;
     int UDPlength;
     int sourceport;
     int destport;
@@ -18,19 +17,18 @@ public class UDPHeader{
     int flags;
     int seqNo;
     int ackNo;
-    public UDPHeader(String sourceAddress, int sourceport, int destport, int flags, byte[] data){
-        this.sourceAddress = sourceAddress; // 32 bit sourceAddress
+
+    public UDPHeader(int sourceport, int destport, int flags, int seqNo, int ackNo, byte[] data){
         this.sourceport = sourceport; //16bit sourceport
         this.destport = destport; //16bit destport
         this.UDPlength = HEADERLENGTH + data.length;//16 bit UDPlength = UDP header + data
         this.flags = flags; // 8 bits flags
-        this.seqNo = 0; //16 bits sequence number
-        this.ackNo = 0; // 16 bits ack number
+        this.seqNo = seqNo; //16 bits sequence number
+        this.ackNo = ackNo; // 16 bits ack number
         this.checksum = 0; //TODO: implement
     }
 
-    public UDPHeader(String sourceAddress, int sourcePort, int destPort, int udpLength, int flags, int seqNo, int ackNo, int checksum){
-        this.sourceAddress = sourceAddress;
+    public UDPHeader(int sourcePort, int destPort, int udpLength, int flags, int seqNo, int ackNo, int checksum){
         this.sourceport = sourcePort;
         this.destport = destPort;
         this.UDPlength = udpLength;
@@ -42,10 +40,8 @@ public class UDPHeader{
 
     public byte[] getHeaderByteRepresentation(){
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
-        byte[] sourceAddress = getByteAddress(this.sourceAddress);
 
         try {
-            outputStream.write(sourceAddress);
             outputStream.write((get2ByteRepresentation(sourceport)));
             outputStream.write((get2ByteRepresentation(destport)));
             outputStream.write((get2ByteRepresentation(UDPlength)));
@@ -59,18 +55,6 @@ public class UDPHeader{
             System.out.println("Could not write this!");
         }
         return outputStream.toByteArray( );
-    }
-
-    public byte[] getByteAddress(String sourceAddress){
-        byte[] result = new byte[4];
-        try {
-            InetAddress ip = InetAddress.getByName(sourceAddress);
-            result = ip.getAddress();
-        } catch (UnknownHostException e) {
-            System.out.println("The host is unknown");
-        }
-        return result;
-
     }
 
     public byte[] get2ByteRepresentation(int value){
