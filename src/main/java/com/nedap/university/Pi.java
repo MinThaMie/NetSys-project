@@ -17,7 +17,7 @@ class Pi {
     private static boolean dnsIsSet = false;
     static void init(){
         try{
-            broadCastSocket = new MulticastSocket(Statics.BROADCASTPORT.portNo);
+            broadCastSocket = new MulticastSocket(Statics.BROADCASTPORT.value);
         }catch(IOException e){
             e.getMessage();
         }
@@ -28,11 +28,11 @@ class Pi {
         while(!dnsIsSet) {
             try {
                 byte[] buf = new byte[1000];
-                DatagramPacket recv = new DatagramPacket(buf, buf.length);
-                broadCastSocket.receive(recv);
-                InetAddress senderAddress = recv.getAddress();
-                Packet receivedPacket = Packet.bytesToPacket(recv.getData());
-                int flags = receivedPacket.getHeader().flags;
+                DatagramPacket received = new DatagramPacket(buf, buf.length);
+                broadCastSocket.receive(received);
+                InetAddress senderAddress = received.getAddress();
+                Packet receivedPacket = Packet.bytesToPacket(received.getData());
+                int flags = receivedPacket.getHeader().getFlags();
                 if (Flag.isSet(Flag.DNS, flags)) {
                     sendDNSReply(receivedPacket, senderAddress);
                 }
@@ -42,7 +42,7 @@ class Pi {
         }
         DatagramPacket received = receiveDatagramPacket();
         Packet receivedPacket = Packet.bytesToPacket(received.getData());
-        int flags = receivedPacket.getHeader().flags;
+        int flags = receivedPacket.getHeader().getFlags();
         if (Flag.isSet(Flag.FILES, flags)) {
             System.out.println("received file request");
             SendFileRequestResponse();
@@ -55,10 +55,10 @@ class Pi {
         int COMMUNICATION_PORT = 9292;
 
         System.out.println("Received DNS request and reply");
-        Packet myPacket = new Packet(COMMUNICATION_PORT,receivedPacket.getHeader().sourceport, new Flag[]{Flag.DNS, Flag.ACK}, 0, 0, new byte[]{});
+        Packet myPacket = new Packet(COMMUNICATION_PORT,receivedPacket.getHeader().getSourceport(), new Flag[]{Flag.DNS, Flag.ACK}, 0, 0, new byte[]{});
         byte[] myBytes = Packet.getByteRepresentation(myPacket);
         try {
-            DatagramPacket replyDNSPacket = new DatagramPacket(myBytes, myBytes.length, address, receivedPacket.getHeader().sourceport);
+            DatagramPacket replyDNSPacket = new DatagramPacket(myBytes, myBytes.length, address, receivedPacket.getHeader().getSourceport());
             personalSocket = new DatagramSocket(COMMUNICATION_PORT);
             personalSocket.send(replyDNSPacket);
             dnsIsSet = true;

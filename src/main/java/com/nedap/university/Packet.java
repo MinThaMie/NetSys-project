@@ -2,31 +2,30 @@ package com.nedap.university;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Arrays;
 
 /**
+ * Packet class used to build the packets, including translation to and from bytes
  * Created by anne-greeth.vanherwijnen on 10/04/2017.
  */
 public class Packet {
     private UDPHeader header;
     private byte[] data;
-    private static int HEADERLENGTH = 13; //in Bytes
-    public Packet(int sourceport, int destport, Flag[] flags, int seqNo, int ackNo, byte[] data){
+
+    Packet(int sourceport, int destport, Flag[] flags, int seqNo, int ackNo, byte[] data){
         this.header = new UDPHeader(sourceport,destport,Flag.setFlags(flags), seqNo, ackNo ,data);
         this.data = data;
     }
 
-    public Packet(UDPHeader header, byte[] data){
+    private Packet(UDPHeader header, byte[] data){
         this.header = header;
         this.data = data;
     }
 
     public static void main(String[] args) {
-        byte[] mydata = "test".getBytes();
+        byte[] mydata = "".getBytes();
         Packet myPacket = new Packet( 8080, 9292, new Flag[]{Flag.ACK},1, 0, mydata);
-        Packet testPacket = myPacket.bytesToPacket(getByteRepresentation(myPacket));
+        Packet testPacket = bytesToPacket(getByteRepresentation(myPacket));
         testPacket.print();
     }
 
@@ -35,7 +34,7 @@ public class Packet {
      * nested UPDHeader class which creates the UDPheader for the packer
      */
 
-    public static byte[] getByteRepresentation(Packet packet){
+    static byte[] getByteRepresentation(Packet packet){
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         try {
             outputStream.write(packet.getHeader().getHeaderByteRepresentation());
@@ -47,22 +46,22 @@ public class Packet {
         return outputStream.toByteArray( );
     }
 
-    public UDPHeader getHeader(){
+    UDPHeader getHeader(){
         return this.header;
     }
 
-    public byte[] getData(){
+    private byte[] getData(){
         return this.data;
     }
 
-    public static Packet bytesToPacket(byte[] packet){
-        byte[] headerBytes = Arrays.copyOfRange(packet, 0, HEADERLENGTH);
+    static Packet bytesToPacket(byte[] packet){
+        byte[] headerBytes = Arrays.copyOfRange(packet, 0, Statics.HEADERLENGHT.value);
         UDPHeader header = headerBytesToHeader(headerBytes);
-        byte[] data = Arrays.copyOfRange(packet, HEADERLENGTH, packet.length);
+        byte[] data = Arrays.copyOfRange(packet, Statics.HEADERLENGHT.value, packet.length);
         return new Packet(header, data);
     }
 
-    public static UDPHeader headerBytesToHeader(byte[] header){
+    private static UDPHeader headerBytesToHeader(byte[] header){
         int sourcePort = Utils.bytesToInt(Arrays.copyOfRange(header, 0, 2));
         int destPort = Utils.bytesToInt(Arrays.copyOfRange(header, 2, 4));
         int udpLength = Utils.bytesToInt(Arrays.copyOfRange(header, 4, 6));
@@ -73,8 +72,8 @@ public class Packet {
         return new UDPHeader(sourcePort, destPort, udpLength, flags, seqNo, ackNo, checksum);
     }
 
-    public void print(){
-        System.out.println("This packet: "  + this.getHeader().sourceport + " " +this.getHeader().destport + " " + this.getHeader().flags);
+    void print(){
+        System.out.println("This packet: "  + this.getHeader().getSourceport() + " " +this.getHeader().getDestport() + " " + this.getHeader().getFlags());
     }
 
 

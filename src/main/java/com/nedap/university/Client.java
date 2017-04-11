@@ -16,8 +16,9 @@ class Client extends Thread {
     private static int myPort = 7272; //Needs to be fixed because mySocket.getPort only works once it's connected
     private static InetAddress PiAddress;
     private static int PiPort;
+    private static boolean isConnected = true;
 
-    public Client(){
+    private Client(){
         //TODO: Think of a client implementation
     }
 
@@ -30,11 +31,14 @@ class Client extends Thread {
             System.out.println("Socket could not be opened");
         }
 
-        while(true){
+        while(isConnected){
             String input = handleTerminalInput();
             if (input.equals("files")){
                 System.out.println("Send file request");
                 sendFileRequest();
+            }
+            if (input.equals("shutdown")){
+                shutDown();
             }
         }
     }
@@ -54,9 +58,9 @@ class Client extends Thread {
 
     private static void sendDNSPacket(){
         try {
-            Packet myPacket = new Packet(myPort,Statics.BROADCASTPORT.portNo, new Flag[]{Flag.DNS}, 0, 0, new byte[]{});
+            Packet myPacket = new Packet(myPort,Statics.BROADCASTPORT.value, new Flag[]{Flag.DNS}, 0, 0, new byte[]{});
             byte[] myBytes = Packet.getByteRepresentation(myPacket);
-            mySocket.send(new DatagramPacket(myBytes, myBytes.length, InetAddress.getByName(Statics.BROADCASTADDRESS.ipAddress), Statics.BROADCASTPORT.portNo));
+            mySocket.send(new DatagramPacket(myBytes, myBytes.length, InetAddress.getByName(Statics.BROADCASTADDRESS.string), Statics.BROADCASTPORT.value));
         } catch (UnknownHostException e){
             System.out.println("The host is unknown");
         } catch (IOException e){
@@ -104,14 +108,14 @@ class Client extends Thread {
     private static void inspectPacket(DatagramPacket received){
         Packet receivedPacket = Packet.bytesToPacket(received.getData());
         UDPHeader header = receivedPacket.getHeader();
-        if(Flag.isSet(Flag.DNS,header.flags)){
-            System.out.println("DNS " +  header.sourceport);
+        if(Flag.isSet(Flag.DNS,header.getFlags())){
+            System.out.println("DNS " +  header.getSourceport());
             PiAddress = received.getAddress();
             PiPort = received.getPort();
         }
 
-        if (Flag.isSet(Flag.ACK, header.flags)){
-            System.out.println("ACK " +  header.sourceport);
+        if (Flag.isSet(Flag.ACK, header.getFlags())){
+            System.out.println("ACK " +  header.getSourceport());
             int[] seqAndAck = updateSeqAndAck(getSeqAndAck(header));
             sendSimpleReply(seqAndAck);
         }
@@ -120,8 +124,8 @@ class Client extends Thread {
 
     private static int[] getSeqAndAck(UDPHeader header){
         int[] result = new int[2];
-        result[0] = header.seqNo; //get seqNo
-        result[1] = header.ackNo; //get ackNo
+        result[0] = header.getSeqNo(); //get seqNo
+        result[1] = header.getAckNo(); //get ackNo
         return result;
     }
 
@@ -138,13 +142,17 @@ class Client extends Thread {
         try {
             BufferedReader terminalIn = new BufferedReader(new InputStreamReader(
                     System.in));
-            while ((msg = terminalIn.readLine()) != null) {
-                System.out.println("my msg " + msg);
+            if ((msg = terminalIn.readLine()) != null) { //TODO: check if if is correct or should be while
+                System.out.println("typed in terminal" + msg);
                 return msg;
             }
         } catch (IOException e) {
             System.out.println("Could not read from buffer");
         }
         return msg;
+    }
+
+    private static void shutDown(){
+        isConnected = false;
     }
 }

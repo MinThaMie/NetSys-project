@@ -5,15 +5,15 @@ package com.nedap.university;
  * Created by anne-greeth.vanherwijnen on 11/04/2017.
  */
 public enum Statics {
-    BROADCASTPORT(8080), BROADCASTADDRESS("192.168.40.255");
+    BROADCASTPORT(8080), BROADCASTADDRESS("192.168.40.255"), HEADERLENGHT(13);
 
-    int portNo;
-    String ipAddress;
+    int value;
+    String string;
 
     Statics(int value){
-        this.portNo = value;
+        this.value = value;
     }
     Statics(String string){
-        this.ipAddress = string;
+        this.string = string;
     }
 }

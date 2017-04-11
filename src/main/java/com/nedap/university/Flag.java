@@ -1,6 +1,7 @@
 package com.nedap.university;
 
 /**
+ * Flag ENUM to easily and obviously set and check flags
  * Created by anne-greeth.vanherwijnen on 11/04/2017.
  */
 public enum Flag {
@@ -24,6 +25,6 @@ public enum Flag {
     }
 
     public static boolean isSet(Flag flag, int receivedFlagValue){
-        return (receivedFlagValue & flag.value) > 0;
+        return (receivedFlagValue & flag.value) != 0;
     }
 }

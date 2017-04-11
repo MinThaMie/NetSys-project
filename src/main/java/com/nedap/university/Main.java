@@ -7,7 +7,7 @@ public class Main {
 
     private Main() {}
 
-    public static void main(String[] args) { //TODO: remove this
+    public static void main(String[] args) {
         running = true;
         System.out.println("Hello, Nedap University!");
         String whatAmI = args[0];
@@ -23,8 +23,6 @@ public class Main {
             try {
                 if(isPi){
                     Pi.runPi();
-                } else {
-                    //Client.runClient();
                 }
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
@@ -52,6 +50,6 @@ public class Main {
             }
         };
         Runtime.getRuntime().addShutdownHook(shutdownThread);
-    }
+    } //TODO: Find out what this does
 
 }
