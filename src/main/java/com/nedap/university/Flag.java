@@ -11,7 +11,7 @@ public enum Flag {
         this.value = value;
     }
 
-    public int setFlags(Flag[] flags){
+    public static int setFlags(Flag[] flags){
         int flagsvalue = 0;
         for(Flag f : flags){
             flagsvalue =+ f.value;

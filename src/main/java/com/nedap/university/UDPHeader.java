@@ -18,12 +18,12 @@ public class UDPHeader{
     int flags;
     int seqNo;
     int ackNo;
-    public UDPHeader(String sourceAddress, int sourceport, int destport, byte[] data){
+    public UDPHeader(String sourceAddress, int sourceport, int destport, int flags, byte[] data){
         this.sourceAddress = sourceAddress; // 32 bit sourceAddress
         this.sourceport = sourceport; //16bit sourceport
         this.destport = destport; //16bit destport
         this.UDPlength = HEADERLENGTH + data.length;//16 bit UDPlength = UDP header + data
-        this.flags = 0; // 8 bits flags
+        this.flags = flags; // 8 bits flags
         this.seqNo = 0; //16 bits sequence number
         this.ackNo = 0; // 16 bits ack number
         this.checksum = 0; //TODO: implement
@@ -66,8 +66,6 @@ public class UDPHeader{
         try {
             InetAddress ip = InetAddress.getByName(sourceAddress);
             result = ip.getAddress();
-            System.out.println(Utils.bytesToHex(result));
-
         } catch (UnknownHostException e) {
             System.out.println("The host is unknown");
         }
@@ -79,7 +77,6 @@ public class UDPHeader{
         byte[] result =  new byte[2];
         result[0] = (byte) (value >> 8);
         result[1] = (byte) value;
-        System.out.println(Utils.bytesToHex(result));
         return result;
     }
 

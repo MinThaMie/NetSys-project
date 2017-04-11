@@ -13,8 +13,8 @@ public class Packet {
     private UDPHeader header;
     private byte[] data;
     private static int HEADERLENGTH = 136; //17 bytes
-    public Packet(String sourceAdr, int sourceport, int destport, byte[] data){
-        this.header = new UDPHeader(sourceAdr, sourceport,destport,data);
+    public Packet(String sourceAdr, int sourceport, int destport, Flag[] flags, byte[] data){
+        this.header = new UDPHeader(sourceAdr, sourceport,destport,Flag.setFlags(flags),data);
         this.data = data;
     }
 
@@ -25,7 +25,7 @@ public class Packet {
 
     public static void main(String[] args) {
         byte[] mydata = "test".getBytes();
-        Packet myPacket = new Packet("192.168.40.5", 8080, 9292, mydata);
+        Packet myPacket = new Packet("192.168.40.5", 8080, 9292, new Flag[]{Flag.ACK}, mydata);
         Packet testPacket = myPacket.bytesToPacket(getByteRepresentation(myPacket));
         testPacket.print();
     }
@@ -55,15 +55,14 @@ public class Packet {
         return this.data;
     }
 
-    public Packet bytesToPacket(byte[] packet){
+    public static Packet bytesToPacket(byte[] packet){
         byte[] headerBytes = Arrays.copyOfRange(packet, 0, HEADERLENGTH/8);
         UDPHeader header = headerBytesToHeader(headerBytes);
-        System.out.println("packetlength " + packet.length);
         byte[] data = Arrays.copyOfRange(packet, HEADERLENGTH/8, packet.length);
         return new Packet(header, data);
     }
 
-    public UDPHeader headerBytesToHeader(byte[] header){
+    public static UDPHeader headerBytesToHeader(byte[] header){
         String sourceAddr= "";
         try {
             sourceAddr = InetAddress.getByAddress(Arrays.copyOfRange(header, 0, 4)).getHostAddress();
@@ -82,7 +81,7 @@ public class Packet {
     }
 
     public void print(){
-        System.out.println("This packet: " + this.getHeader().sourceAddress + " " + this.getHeader().sourceport + " " +this.getHeader().destport);
+        System.out.println("This packet: " + this.getHeader().sourceAddress + " " + this.getHeader().sourceport + " " +this.getHeader().destport + " " + this.getHeader().flags);
     }
 
 
