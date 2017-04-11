@@ -10,7 +10,7 @@ public class Main {
     private static int BROADCAST_PORT = 8080;
     private static String BROADCAST_ADDRESS = "192.168.40.255"; //.255 because of the subnet
     private static String PI_ADDRESS = "192.168.40.5";
-    private static String WHOAREYOU = "Who are you?";
+    private static int COMMUNICATION_PORT = 9292;
 
 
     private Main() {}
@@ -29,11 +29,18 @@ public class Main {
                     //String filePath = args[1];
                     //createFolder(filePath); //Creates a folder where the uploaded files should go and the downloaded files should come from
                     try {
-                        byte[] buf = new byte[100];
+                        byte[] buf = new byte[1000];
                         DatagramPacket recv = new DatagramPacket(buf, buf.length);
                         broadCastSocket.receive(recv);
-                        String recvMSG = new String( recv.getData());
-                        System.out.println("received: " + recvMSG);
+                        Packet receivedPacket = Packet.bytesToPacket(recv.getData());
+                        if (Flag.isSet(Flag.DNS, receivedPacket.getHeader().flags)){
+                            System.out.println("Received DNS request and reply");
+                            Packet myPacket = new Packet(PI_ADDRESS,COMMUNICATION_PORT,receivedPacket.getHeader().sourceport, new Flag[]{Flag.DNS}, PI_ADDRESS.getBytes());
+                            byte[] myBytes = Packet.getByteRepresentation(myPacket);
+                            DatagramPacket replyDNSPacket = new DatagramPacket(myBytes,myBytes.length,InetAddress.getByName(receivedPacket.getHeader().sourceAddress), receivedPacket.getHeader().sourceport);
+                            DatagramSocket personalSocket = new DatagramSocket(COMMUNICATION_PORT);
+                            personalSocket.send(replyDNSPacket);
+                        }
                     } catch (IOException e){
                         System.out.println("Error");
                     }
@@ -42,6 +49,11 @@ public class Main {
                         sendDNSPacket();
                         dnsSend = true;
                     }
+                    /*byte[] buf = new byte[1000];
+                    DatagramPacket recv = new DatagramPacket(buf, buf.length);
+                    broadCastSocket.receive(recv);
+                    Packet receivedPacket = Packet.bytesToPacket(recv.getData());
+                    receivedPacket.print();*/ //TODO: needs to be its own socket
                 }
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
@@ -93,9 +105,9 @@ public class Main {
     private static void sendDNSPacket(){
         try {
             DatagramSocket mySocket = new DatagramSocket();
-            String msg = WHOAREYOU;
-            byte[] byteMsg = msg.getBytes();
-            mySocket.send(new DatagramPacket(byteMsg, byteMsg.length, InetAddress.getByName(BROADCAST_ADDRESS), BROADCAST_PORT));
+            Packet myPacket = new Packet("192.168.10.6",mySocket.getPort(),BROADCAST_PORT, new Flag[]{Flag.DNS}, new byte[]{});
+            byte[] myBytes = Packet.getByteRepresentation(myPacket);
+            mySocket.send(new DatagramPacket(myBytes, myBytes.length, InetAddress.getByName(BROADCAST_ADDRESS), BROADCAST_PORT));
         } catch (UnknownHostException e){
             System.out.println("The host is unknown");
         } catch (SocketException e ) {
@@ -103,5 +115,9 @@ public class Main {
         } catch (IOException e){
             System.out.println("Something else went wrong");
         }
+    }
+
+    private static void sendDNSReply(){
+
     }
 }
