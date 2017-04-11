@@ -55,7 +55,7 @@ class Pi {
         int COMMUNICATION_PORT = 9292;
 
         System.out.println("Received DNS request and reply");
-        Packet myPacket = new Packet(COMMUNICATION_PORT,receivedPacket.getHeader().sourceport, new Flag[]{Flag.DNS}, 0, 0, new byte[]{});
+        Packet myPacket = new Packet(COMMUNICATION_PORT,receivedPacket.getHeader().sourceport, new Flag[]{Flag.DNS, Flag.ACK}, 0, 0, new byte[]{});
         byte[] myBytes = Packet.getByteRepresentation(myPacket);
         try {
             DatagramPacket replyDNSPacket = new DatagramPacket(myBytes, myBytes.length, address, receivedPacket.getHeader().sourceport);

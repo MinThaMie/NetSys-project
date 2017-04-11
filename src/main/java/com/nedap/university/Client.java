@@ -77,7 +77,7 @@ class Client extends Thread {
     }
 
     private static void sendSimpleReply(int[] seqAndAck){
-        Packet myPacket = new Packet(myPort,PiPort, new Flag[]{Flag.ACK},seqAndAck[0], seqAndAck[1], new byte[]{});
+        Packet myPacket = new Packet(myPort,PiPort, new Flag[]{Flag.ACK}, seqAndAck[0], seqAndAck[1], new byte[]{});
         byte[] myBytes = Packet.getByteRepresentation(myPacket);
         try {
             mySocket.send(new DatagramPacket(myBytes, myBytes.length, PiAddress, PiPort));
@@ -108,11 +108,13 @@ class Client extends Thread {
             System.out.println("DNS " +  header.sourceport);
             PiAddress = received.getAddress();
             PiPort = received.getPort();
-        } /*else if (Flag.isSet(Flag.ACK, header.flags) && PiAddress != null){
+        }
+
+        if (Flag.isSet(Flag.ACK, header.flags)){
             System.out.println("ACK " +  header.sourceport);
             int[] seqAndAck = updateSeqAndAck(getSeqAndAck(header));
             sendSimpleReply(seqAndAck);
-        }*/
+        }
         receivedPacket.print();
     }
 

@@ -14,7 +14,7 @@ public enum Flag {
     public static int setFlags(Flag[] flags){
         int flagsvalue = 0;
         for(Flag f : flags){
-            flagsvalue =+ f.value;
+            flagsvalue += f.value;
         }
         return flagsvalue;
     }
