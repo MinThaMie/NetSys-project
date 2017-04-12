@@ -42,7 +42,7 @@ class Client extends Thread {
             String input = handleTerminalInput();
             if (input.equals("files")){
                 System.out.println("Send file request");
-                mySender.sendFileRequest();
+                mySender.sendFile();
             }
             if (input.equals("shutdown")){
                 shutDown();
@@ -82,7 +82,6 @@ class Client extends Thread {
         Packet receivedPacket = Packet.bytesToPacket(received.getData());
         UDPHeader header = receivedPacket.getHeader();
         if(Flag.isSet(Flag.DNS,header.getFlags())){
-            System.out.println("DNS " +  header.getSourceport());
             PiAddress = received.getAddress();
             mySender.setPiAddress(PiAddress);
             PiPort = received.getPort();
@@ -91,16 +90,14 @@ class Client extends Thread {
         }
 
         if (Flag.isSet(Flag.ACK, header.getFlags()) && PiAddress != null) {
-            System.out.println("ACK " + header.getSourceport());
             int[] seqAndAck = getSeqAndAck(header);
-            mySender.sendSimpleReply(seqAndAck); //TODO: Should be passed to the client who tells the sender
+            //mySender.sendSimpleReply(seqAndAck); //TODO: Should be passed to the client who tells the sender
         }
         receivedPacket.print();
     }
 
     void packetAvailable(boolean bool){
         packetArrived = bool;
-        System.out.println("I've updated the packetArrived status to " + packetArrived);
     }
 
     private static int[] getSeqAndAck(UDPHeader header){

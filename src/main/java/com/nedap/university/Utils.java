@@ -1,5 +1,6 @@
 package com.nedap.university;
 
+import java.io.*;
 import java.util.Formatter;
 
 /**
@@ -27,6 +28,18 @@ public class Utils {
 
     public static byte[] StringArraytoByteArray(String[] strings){
         return new byte[]{};
+    }
+
+    public static void setFileContents(byte[] fileContents) { //TODO: Make sure that it write away correctly
+        File fileToWrite = new File("/files/plaatje.png");
+        try (FileOutputStream fileStream = new FileOutputStream(fileToWrite)) {
+            for (byte fileContent : fileContents) {
+                fileStream.write(fileContent);
+            }
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            System.err.println(e.getStackTrace());
+        }
     }
 
 }

@@ -30,7 +30,7 @@ class Pi {
     static void runPi(){
         while(!dnsIsSet) {
             try {
-                byte[] buf = new byte[1000];
+                byte[] buf = new byte[1000]; //TODO: think of a smart way to trim the data because it appends zeros now
                 DatagramPacket received = new DatagramPacket(buf, buf.length);
                 broadCastSocket.receive(received);
                 clientAddress = received.getAddress();
@@ -43,15 +43,16 @@ class Pi {
                 System.out.println("Error");
             }
         }
+
         DatagramPacket received = receiveDatagramPacket();
         Packet receivedPacket = Packet.bytesToPacket(received.getData());
         UDPHeader header = receivedPacket.getHeader();
         int flags = receivedPacket.getHeader().getFlags();
         if (Flag.isSet(Flag.FILES, flags)) {
-            System.out.println("received file request");
-            SendFileRequestResponse();
+            System.out.println("received file");
+            System.out.println(Arrays.toString(receivedPacket.getData()));
+            Utils.setFileContents(receivedPacket.getData());
         } else if (Flag.isSet(Flag.ACK, flags)){
-            System.out.println("I've got an Ack");
             int[] seqAndAck = updateSeqAndAck(getSeqAndAck(header));
             sendSimpleReply(seqAndAck);
         }
@@ -96,7 +97,7 @@ class Pi {
 
     private static DatagramPacket receiveDatagramPacket(){
         System.out.println("ready to receive some data...");
-        byte[] buf = new byte[1000];
+        byte[] buf = new byte[1000];//TODO: think of a smart way to trim the data because it appends zeros now
         DatagramPacket recv = new DatagramPacket(buf, buf.length);
         try {
             personalSocket.receive(recv);

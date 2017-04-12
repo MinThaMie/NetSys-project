@@ -1,10 +1,12 @@
 package com.nedap.university;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 
 /**
  *
@@ -56,6 +58,20 @@ class Sender extends Thread {
         Packet myPacket = new Packet(myPort,PiPort, new Flag[]{Flag.ACK}, updatedSeqAck[0], updatedSeqAck[1], new byte[]{});
         byte[] myBytes = Packet.getByteRepresentation(myPacket);
         try {
+            mySocket.send(new DatagramPacket(myBytes, myBytes.length, PiAddress, PiPort));
+        } catch (UnknownHostException e){
+            System.out.println("The host is unknown");
+        } catch (IOException e){
+            System.out.println("Something else went wrong");
+        }
+    }
+
+    void sendFile(){
+        try {
+            byte[] data = FilePrep.getBytesFromFile(new File("/Users/anne-greeth.vanherwijnen/NetSys-project/rdtcInput1.png"));
+            System.out.println("myData on the sender: " + Arrays.toString(data));
+            Packet myPacket = new Packet(myPort, PiPort, new Flag[]{Flag.FILES}, 0, 0, data);
+            byte[] myBytes = Packet.getByteRepresentation(myPacket);
             mySocket.send(new DatagramPacket(myBytes, myBytes.length, PiAddress, PiPort));
         } catch (UnknownHostException e){
             System.out.println("The host is unknown");
