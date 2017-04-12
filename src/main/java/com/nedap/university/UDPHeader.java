@@ -17,10 +17,9 @@ class UDPHeader{
     private int checksum;
 
     UDPHeader(int sourceport, int destport, int flags, int seqNo, int ackNo, byte[] data){
-        int headerLength = 17; //17 bytes
         this.sourceport = sourceport; //16bit sourceport
         this.destport = destport; //16bit destport
-        this.UDPlength = headerLength + data.length;//16 bit UDPlength = UDP header + data
+        this.UDPlength = Statics.HEADERLENGHT.value + data.length;//16 bit UDPlength = UDP header + data
         this.flags = flags; // 8 bits flags
         this.seqNo = seqNo; //16 bits sequence number
         this.ackNo = ackNo; // 16 bits ack number

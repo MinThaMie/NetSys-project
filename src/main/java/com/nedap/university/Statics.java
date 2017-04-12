@@ -5,7 +5,7 @@ package com.nedap.university;
  * Created by anne-greeth.vanherwijnen on 11/04/2017.
  */
 public enum Statics {
-    BROADCASTPORT(8080), BROADCASTADDRESS("192.168.40.255"), HEADERLENGHT(13);
+    BROADCASTPORT(8080), BROADCASTADDRESS("192.168.40.255"), HEADERLENGHT(13), PACKETSIZE(1000);
 
     int value;
     String string;
