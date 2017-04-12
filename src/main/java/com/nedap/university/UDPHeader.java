@@ -16,7 +16,7 @@ class UDPHeader{
     private int ackNo;
     private int checksum;
 
-    UDPHeader(int sourceport, int destport, int flags, int seqNo, int ackNo, byte[] data){ //TODO: maybe remove this one because the data is not really relevant
+    UDPHeader(int sourceport, int destport, int flags, int seqNo, int ackNo, byte[] data){
         int headerLength = 17; //17 bytes
         this.sourceport = sourceport; //16bit sourceport
         this.destport = destport; //16bit destport

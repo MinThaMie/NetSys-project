@@ -11,15 +11,19 @@ import java.net.*;
  * Created by anne-greeth.vanherwijnen on 11/04/2017.
  */
 class Client extends Thread {
-    private static boolean dnsSend = false;
-    private static DatagramSocket mySocket;
+    private static boolean dnsResolved = false;
     private static int myPort = 7272; //Needs to be fixed because mySocket.getPort only works once it's connected
     private static InetAddress PiAddress;
     private static int PiPort;
     private static boolean isConnected = true;
+    private static DatagramSocket mySocket;
+    private static volatile boolean packetArrived = false; //TODO: find out what volatile really means?
+    private static Receiver myReceiver;
+    private static Sender mySender;
 
     private Client(){
-        //TODO: Think of a client implementation
+        myReceiver = new Receiver(this);
+        mySender = new Sender(this);
     }
 
     static void init(){
@@ -27,6 +31,9 @@ class Client extends Thread {
             mySocket = new DatagramSocket(myPort);
             Client client = new Client();
             client.start();
+            myReceiver.start();
+            mySender.init();
+            mySender.sendDNSPacket(); //You can always do this because you only need the broadcast info;
         } catch (SocketException e ) {
             System.out.println("Socket could not be opened");
         }
@@ -35,7 +42,7 @@ class Client extends Thread {
             String input = handleTerminalInput();
             if (input.equals("files")){
                 System.out.println("Send file request");
-                sendFileRequest();
+                mySender.sendFileRequest();
             }
             if (input.equals("shutdown")){
                 shutDown();
@@ -47,95 +54,14 @@ class Client extends Thread {
      * Does the datatransfer side of things while the main thread takes care of the user input
      */
     public void run(){
-        while (!dnsSend) {
-            sendDNSPacket();
-            while(PiAddress == null){
-                inspectPacket(receiveDatagramPacket());
+        while(isConnected) {
+            if (packetArrived){
+                System.out.println("getting packet");
+                inspectPacket(myReceiver.getFirstPacket());
             }
-            dnsSend = true;
         }
+        System.out.println("finished");
     }
-
-    private static void sendDNSPacket(){
-        try {
-            Packet myPacket = new Packet(myPort,Statics.BROADCASTPORT.value, new Flag[]{Flag.DNS}, 0, 0, new byte[]{});
-            byte[] myBytes = Packet.getByteRepresentation(myPacket);
-            mySocket.send(new DatagramPacket(myBytes, myBytes.length, InetAddress.getByName(Statics.BROADCASTADDRESS.string), Statics.BROADCASTPORT.value));
-        } catch (UnknownHostException e){
-            System.out.println("The host is unknown");
-        } catch (IOException e){
-            System.out.println("Something else went wrong");
-        }
-    }
-
-    private static void sendFileRequest(){
-        try {
-            Packet myPacket = new Packet(myPort,PiPort, new Flag[]{Flag.FILES}, 0, 0, new byte[]{});
-            byte[] myBytes = Packet.getByteRepresentation(myPacket);
-            mySocket.send(new DatagramPacket(myBytes, myBytes.length, PiAddress, PiPort));
-        } catch (UnknownHostException e){
-            System.out.println("The host is unknown");
-        } catch (IOException e){
-            System.out.println("Something else went wrong");
-        }
-    }
-
-    private static void sendSimpleReply(int[] seqAndAck){
-        Packet myPacket = new Packet(myPort,PiPort, new Flag[]{Flag.ACK}, seqAndAck[0], seqAndAck[1], new byte[]{});
-        byte[] myBytes = Packet.getByteRepresentation(myPacket);
-        try {
-            mySocket.send(new DatagramPacket(myBytes, myBytes.length, PiAddress, PiPort));
-        } catch (UnknownHostException e){
-            System.out.println("The host is unknown");
-        } catch (IOException e){
-            System.out.println("Something else went wrong");
-        }
-    }
-
-    private static DatagramPacket receiveDatagramPacket(){
-        System.out.println("ready to receive some data...");
-        byte[] buf = new byte[1000];
-        DatagramPacket recv = new DatagramPacket(buf, buf.length);
-        try {
-            mySocket.receive(recv);
-            return recv;
-        } catch (IOException e){
-            System.out.println("Error in receiving the packet");
-        }
-        return recv;
-    }
-
-    private static void inspectPacket(DatagramPacket received){
-        Packet receivedPacket = Packet.bytesToPacket(received.getData());
-        UDPHeader header = receivedPacket.getHeader();
-        if(Flag.isSet(Flag.DNS,header.getFlags())){
-            System.out.println("DNS " +  header.getSourceport());
-            PiAddress = received.getAddress();
-            PiPort = received.getPort();
-        }
-
-        if (Flag.isSet(Flag.ACK, header.getFlags())){
-            System.out.println("ACK " +  header.getSourceport());
-            int[] seqAndAck = updateSeqAndAck(getSeqAndAck(header));
-            sendSimpleReply(seqAndAck);
-        }
-        receivedPacket.print();
-    }
-
-    private static int[] getSeqAndAck(UDPHeader header){
-        int[] result = new int[2];
-        result[0] = header.getSeqNo(); //get seqNo
-        result[1] = header.getAckNo(); //get ackNo
-        return result;
-    }
-
-    private static int[] updateSeqAndAck(int[] array){
-        int[] result = new int[2];
-        result[0] = array[1];
-        result[1] = array[0] + 1;
-        return result;
-    }
-
 
     private static String handleTerminalInput() {
         String msg = "";
@@ -152,6 +78,41 @@ class Client extends Thread {
         return msg;
     }
 
+    private static void inspectPacket(DatagramPacket received){
+        Packet receivedPacket = Packet.bytesToPacket(received.getData());
+        UDPHeader header = receivedPacket.getHeader();
+        if(Flag.isSet(Flag.DNS,header.getFlags())){
+            System.out.println("DNS " +  header.getSourceport());
+            PiAddress = received.getAddress();
+            mySender.setPiAddress(PiAddress);
+            PiPort = received.getPort();
+            mySender.setPiPort(PiPort);
+
+        }
+
+        if (Flag.isSet(Flag.ACK, header.getFlags()) && PiAddress != null) {
+            System.out.println("ACK " + header.getSourceport());
+            int[] seqAndAck = getSeqAndAck(header);
+            mySender.sendSimpleReply(seqAndAck); //TODO: Should be passed to the client who tells the sender
+        }
+        receivedPacket.print();
+    }
+
+    void packetAvailable(boolean bool){
+        packetArrived = bool;
+        System.out.println("I've updated the packetArrived status to " + packetArrived);
+    }
+
+    private static int[] getSeqAndAck(UDPHeader header){
+        int[] result = new int[2];
+        result[0] = header.getSeqNo(); //get seqNo
+        result[1] = header.getAckNo(); //get ackNo
+        return result;
+    }
+
+    DatagramSocket getSocket(){
+        return mySocket;
+    }
     private static void shutDown(){
         isConnected = false;
     }

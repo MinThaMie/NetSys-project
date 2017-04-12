@@ -15,6 +15,9 @@ class Pi {
     private static MulticastSocket broadCastSocket;
     private static DatagramSocket personalSocket;
     private static boolean dnsIsSet = false;
+    private static int clientPort;
+    private static InetAddress clientAddress;
+    private static int COMMUNICATION_PORT = 9292;
     static void init(){
         try{
             broadCastSocket = new MulticastSocket(Statics.BROADCASTPORT.value);
@@ -30,11 +33,11 @@ class Pi {
                 byte[] buf = new byte[1000];
                 DatagramPacket received = new DatagramPacket(buf, buf.length);
                 broadCastSocket.receive(received);
-                InetAddress senderAddress = received.getAddress();
+                clientAddress = received.getAddress();
                 Packet receivedPacket = Packet.bytesToPacket(received.getData());
                 int flags = receivedPacket.getHeader().getFlags();
                 if (Flag.isSet(Flag.DNS, flags)) {
-                    sendDNSReply(receivedPacket, senderAddress);
+                    sendDNSReply(receivedPacket, clientAddress);
                 }
             } catch (IOException e) {
                 System.out.println("Error");
@@ -42,23 +45,26 @@ class Pi {
         }
         DatagramPacket received = receiveDatagramPacket();
         Packet receivedPacket = Packet.bytesToPacket(received.getData());
+        UDPHeader header = receivedPacket.getHeader();
         int flags = receivedPacket.getHeader().getFlags();
         if (Flag.isSet(Flag.FILES, flags)) {
             System.out.println("received file request");
             SendFileRequestResponse();
         } else if (Flag.isSet(Flag.ACK, flags)){
             System.out.println("I've got an Ack");
+            int[] seqAndAck = updateSeqAndAck(getSeqAndAck(header));
+            sendSimpleReply(seqAndAck);
         }
     }
 
     private static void sendDNSReply(Packet receivedPacket, InetAddress address){
-        int COMMUNICATION_PORT = 9292;
 
+        clientPort = receivedPacket.getHeader().getSourceport();
         System.out.println("Received DNS request and reply");
-        Packet myPacket = new Packet(COMMUNICATION_PORT,receivedPacket.getHeader().getSourceport(), new Flag[]{Flag.DNS, Flag.ACK}, 0, 0, new byte[]{});
+        Packet myPacket = new Packet(COMMUNICATION_PORT, clientPort, new Flag[]{Flag.DNS, Flag.ACK}, 0, 0, new byte[]{});
         byte[] myBytes = Packet.getByteRepresentation(myPacket);
         try {
-            DatagramPacket replyDNSPacket = new DatagramPacket(myBytes, myBytes.length, address, receivedPacket.getHeader().getSourceport());
+            DatagramPacket replyDNSPacket = new DatagramPacket(myBytes, myBytes.length, address, clientPort);
             personalSocket = new DatagramSocket(COMMUNICATION_PORT);
             personalSocket.send(replyDNSPacket);
             dnsIsSet = true;
@@ -74,6 +80,18 @@ class Pi {
     private static void SendFileRequestResponse(){ //TODO: implement the real deal (sending it in a useful format)
         String[] files = getFiles();
         System.out.println("those files " + Arrays.toString(files));
+    }
+
+    private static void sendSimpleReply(int[] seqAndAck){
+        Packet myPacket = new Packet(COMMUNICATION_PORT,clientPort, new Flag[]{Flag.ACK}, seqAndAck[0], seqAndAck[1], new byte[]{});
+        byte[] myBytes = Packet.getByteRepresentation(myPacket);
+        try {
+            personalSocket.send(new DatagramPacket(myBytes, myBytes.length, clientAddress, clientPort));
+        } catch (UnknownHostException e){
+            System.out.println("The host is unknown");
+        } catch (IOException e){
+            System.out.println("Something else went wrong");
+        }
     }
 
     private static DatagramPacket receiveDatagramPacket(){
@@ -93,5 +111,19 @@ class Pi {
         String filePath = "files";
         File file = new File(filePath);
         return file.list();
+    }
+
+    private static int[] getSeqAndAck(UDPHeader header){
+        int[] result = new int[2];
+        result[0] = header.getSeqNo(); //get seqNo
+        result[1] = header.getAckNo(); //get ackNo
+        return result;
+    }
+
+    private static int[] updateSeqAndAck(int[] array){
+        int[] result = new int[2];
+        result[0] = array[1];
+        result[1] = array[0] + 1;
+        return result;
     }
 }
