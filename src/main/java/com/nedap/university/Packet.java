@@ -42,7 +42,6 @@ public class Packet {
         } catch (IOException e){
             System.out.println("Could not write this!");
         }
-
         return outputStream.toByteArray( );
     }
 
@@ -50,14 +49,14 @@ public class Packet {
         return this.header;
     }
 
-    private byte[] getData(){
+    byte[] getData(){
         return this.data;
     }
 
     static Packet bytesToPacket(byte[] packet){
         byte[] headerBytes = Arrays.copyOfRange(packet, 0, Statics.HEADERLENGHT.value);
         UDPHeader header = headerBytesToHeader(headerBytes);
-        byte[] data = Arrays.copyOfRange(packet, Statics.HEADERLENGHT.value, packet.length);
+        byte[] data = Arrays.copyOfRange(packet, Statics.HEADERLENGHT.value, header.getUDPlength());
         return new Packet(header, data);
     }
 
