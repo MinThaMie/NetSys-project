@@ -1,5 +1,7 @@
 package com.nedap.university;
 
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.*;
@@ -11,107 +13,65 @@ import java.util.Arrays;
  * Created by anne-greeth.vanherwijnen on 11/04/2017.
  */
 
-class Pi {
+class Pi  extends Thread{
     private static MulticastSocket broadCastSocket;
-    private static DatagramSocket personalSocket;
+    private static DatagramSocket communicationSocket;
     private static boolean dnsIsSet = false;
-    private static int clientPort;
-    private static InetAddress clientAddress;
-    private static int COMMUNICATION_PORT = 9292;
+    private static boolean isConnected = false;
+    private static volatile boolean packetArrived = false;
+    private static Receiver myReceiver;
+    private static Sender mySender;
+    static ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+
+    private Pi(){
+        myReceiver = new Receiver(this);
+        mySender = new Sender(this.getCommunicationSocket());
+    }
 
     static void init(){
+        int COMMUNICATION_PORT = 9292;
         try{
+            isConnected = true;
             broadCastSocket = new MulticastSocket(Statics.BROADCASTPORT.value);
+            communicationSocket = new DatagramSocket(COMMUNICATION_PORT); //TODO: maybe move this to the run method and only when there is a dnsSet
+            Pi pi = new Pi();
+            pi.start();
+            myReceiver.start();
         }catch(IOException e){
             e.getMessage();
         }
-    }
 
-
-    static void runPi(){
         while(!dnsIsSet) {
             try {
                 byte[] buf = new byte[1000];
                 DatagramPacket received = new DatagramPacket(buf, buf.length);
                 broadCastSocket.receive(received);
-                clientAddress = received.getAddress();
-                Packet receivedPacket = Packet.bytesToPacket(received.getData());
-                int flags = receivedPacket.getHeader().getFlags();
-                if (Flag.isSet(Flag.DNS, flags)) {
-                    sendDNSReply(receivedPacket, clientAddress);
-                }
+                inspectPacket(received);
             } catch (IOException e) {
                 System.out.println("Error");
             }
         }
-
-        DatagramPacket received = receiveDatagramPacket();
-        Packet receivedPacket = Packet.bytesToPacket(received.getData());
-        UDPHeader header = receivedPacket.getHeader();
-        int flags = receivedPacket.getHeader().getFlags();
-        if (Flag.isSet(Flag.FILES, flags)) {
-            System.out.println("received file");
-            System.out.println(Arrays.toString(receivedPacket.getData()));
-            Utils.setFileContentsPi(receivedPacket.getData(), 1);
-        } else if (Flag.isSet(Flag.ACK, flags)){
-            int[] seqAndAck = updateSeqAndAck(getSeqAndAck(header));
-            sendSimpleReply(seqAndAck);
-        }
     }
 
-    private static void sendDNSReply(Packet receivedPacket, InetAddress address){
-
-        clientPort = receivedPacket.getHeader().getSourceport();
-        System.out.println("Received DNS request and reply");
-        Packet myPacket = new Packet(COMMUNICATION_PORT, clientPort, new Flag[]{Flag.DNS, Flag.ACK}, 0, 0, new byte[]{});
-        byte[] myBytes = Packet.getByteRepresentation(myPacket);
-        try {
-            DatagramPacket replyDNSPacket = new DatagramPacket(myBytes, myBytes.length, address, clientPort);
-            personalSocket = new DatagramSocket(COMMUNICATION_PORT);
-            personalSocket.send(replyDNSPacket);
-            dnsIsSet = true;
-        } catch (UnknownHostException e){
-            System.out.println("The host is unknown");
-        } catch (SocketException e ) {
-            System.out.println("Socket could not be opened");
-        } catch (IOException e){
-            System.out.println("Something else went wrong");
+    public void run(){
+        while(isConnected) {
+            if (packetArrived){
+                inspectPacket(myReceiver.getFirstPacket());
+            }
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
         }
-    }
-
-    private static void SendFileRequestResponse(){ //TODO: implement the real deal (sending it in a useful format)
-        String[] files = getFiles();
-        System.out.println("those files " + Arrays.toString(files));
-    }
-
-    private static void sendSimpleReply(int[] seqAndAck){
-        Packet myPacket = new Packet(COMMUNICATION_PORT,clientPort, new Flag[]{Flag.ACK}, seqAndAck[0], seqAndAck[1], new byte[]{});
-        byte[] myBytes = Packet.getByteRepresentation(myPacket);
-        try {
-            personalSocket.send(new DatagramPacket(myBytes, myBytes.length, clientAddress, clientPort));
-        } catch (UnknownHostException e){
-            System.out.println("The host is unknown");
-        } catch (IOException e){
-            System.out.println("Something else went wrong");
-        }
-    }
-
-    private static DatagramPacket receiveDatagramPacket(){
-        System.out.println("ready to receive some data...");
-        byte[] buf = new byte[1000];//TODO: think of a smart way to trim the data because it appends zeros now
-        DatagramPacket recv = new DatagramPacket(buf, buf.length);
-        try {
-            personalSocket.receive(recv);
-            return recv;
-        } catch (IOException e){
-            System.out.println("Error in receiving the packet");
-        }
-        return recv;
+        System.out.println("finished");
     }
 
     private static String[] getFiles(){
         String filePath = "files";
         File file = new File(filePath);
+        System.out.println(file.list().length);
         return file.list();
     }
 
@@ -122,10 +82,53 @@ class Pi {
         return result;
     }
 
-    private static int[] updateSeqAndAck(int[] array){
-        int[] result = new int[2];
-        result[0] = array[1];
-        result[1] = array[0] + 1;
-        return result;
+    DatagramSocket getCommunicationSocket(){
+        return communicationSocket;
     }
+
+    void packetAvailable(boolean bool){
+        packetArrived = bool;
+    }
+
+    private static void inspectPacket(DatagramPacket received){
+        Packet receivedPacket = Packet.bytesToPacket(received.getData());
+        UDPHeader header = receivedPacket.getHeader();
+        if(Flag.isSet(Flag.DNS,header.getFlags()) && !Flag.isSet(Flag.ACK,header.getFlags())){
+            System.out.println("Received DNS request and reply");
+            mySender.setDestAddress(received.getAddress());
+            mySender.setDestPort(received.getPort());
+            mySender.sendDNSReply();
+        }
+
+        if (Flag.isSet(Flag.DNS, header.getFlags()) && Flag.isSet(Flag.ACK, header.getFlags())){
+            dnsIsSet = true;
+        }
+        if (Flag.isSet(Flag.ACK, header.getFlags())) {
+            int[] seqAndAck = getSeqAndAck(header);
+            mySender.sendSimpleReply(seqAndAck);
+        }
+
+        if (Flag.isSet(Flag.FILES, header.getFlags()) && !Flag.isSet(Flag.FIN, header.getFlags())){
+            receiveFileChunks(receivedPacket.getData());
+        }
+
+        if (Flag.isSet(Flag.FILES, header.getFlags()) && Flag.isSet(Flag.FIN, header.getFlags())){
+            buildReceivedFile(receivedPacket.getData());
+        }
+        //receivedPacket.print();
+    }
+
+    static void receiveFileChunks(byte[] data){
+        try {
+            outputStream.write(data);
+        } catch(IOException e){
+            System.out.println("could not write to stream");
+        }
+    }
+
+    static void buildReceivedFile(byte[] receveidCheckSum){
+        byte[] calculatedChecksum = Utils.setFileContentsPi(outputStream.toByteArray(), 3);
+        System.out.println("The checksums are " + Utils.checkChecksum(receveidCheckSum, calculatedChecksum));
+    }
+
 }
