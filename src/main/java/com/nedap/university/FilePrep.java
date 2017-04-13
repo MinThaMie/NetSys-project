@@ -58,5 +58,8 @@ public class FilePrep {
         return result;
     }
 
+    static LinkedList<byte[]> filePrep(File file){
+        return getBytesToPacketSize(getBytesFromFile(file));
+    }
 
 }
