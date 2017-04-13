@@ -30,8 +30,20 @@ public class Utils {
         return new byte[]{};
     }
 
-    public static void setFileContents(byte[] fileContents) { //TODO: Make sure that it write away correctly
-        File fileToWrite = new File("/files/plaatje.png");
+    public static void setFileContentsPi(byte[] fileContents, int id) {
+        File fileToWrite = new File("/home/pi/files/plaatje%d.png"); //IS piPath
+        try (FileOutputStream fileStream = new FileOutputStream(fileToWrite)) {
+            for (byte fileContent : fileContents) {
+                fileStream.write(fileContent);
+            }
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            System.err.println(e.getStackTrace());
+        }
+    }
+
+    public static void setFileContentsClient(byte[] fileContents, int id) {
+        File fileToWrite = new File(String.format("plaatje%d.jpg", id)); //is Client path
         try (FileOutputStream fileStream = new FileOutputStream(fileToWrite)) {
             for (byte fileContent : fileContents) {
                 fileStream.write(fileContent);

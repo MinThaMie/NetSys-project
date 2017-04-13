@@ -14,6 +14,7 @@ public class FilePrep {
     static byte[] getBytesFromFile(File file){
         try {
             byte[] fileBytes = Files.readAllBytes(file.toPath());
+            System.out.println("byte length " + fileBytes.length);
             return fileBytes;
         } catch(IOException e){
             System.out.println("The file could not be read into a byte array!");
@@ -32,12 +33,30 @@ public class FilePrep {
             fileBuffer.get(partialArray, 0, dataSize);
             result.add(partialArray);
         }
-        result.add(fileBuffer.array());
+        int leftOverDatasize = fileBuffer.capacity() - fileBuffer.position();
+        byte[] leftOver = new byte[leftOverDatasize];
+        fileBuffer.get(leftOver, 0, leftOverDatasize);
+        System.out.println("leftOver " + leftOver.length);
+        result.add(leftOver);
         return result;
     }
 
     static int amountOfPacketsNeeded(byte[] fileBytes){
         return (int) Math.ceil(fileBytes.length/(double)(dataSize));
     }
+
+    static byte[] getFileFromByteChunks(LinkedList<byte[]> receivedChunks){
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
+        for(byte[] bytes : receivedChunks ){
+            try {
+                outputStream.write(bytes);
+            } catch (IOException e){
+                System.out.println("I could not write the bytes :(");
+            }
+        }
+        byte[] result = outputStream.toByteArray();
+        return result;
+    }
+
 
 }

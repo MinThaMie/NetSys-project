@@ -18,6 +18,7 @@ class Pi {
     private static int clientPort;
     private static InetAddress clientAddress;
     private static int COMMUNICATION_PORT = 9292;
+
     static void init(){
         try{
             broadCastSocket = new MulticastSocket(Statics.BROADCASTPORT.value);
@@ -30,7 +31,7 @@ class Pi {
     static void runPi(){
         while(!dnsIsSet) {
             try {
-                byte[] buf = new byte[1000]; //TODO: think of a smart way to trim the data because it appends zeros now
+                byte[] buf = new byte[1000];
                 DatagramPacket received = new DatagramPacket(buf, buf.length);
                 broadCastSocket.receive(received);
                 clientAddress = received.getAddress();
@@ -51,7 +52,7 @@ class Pi {
         if (Flag.isSet(Flag.FILES, flags)) {
             System.out.println("received file");
             System.out.println(Arrays.toString(receivedPacket.getData()));
-            Utils.setFileContents(receivedPacket.getData());
+            Utils.setFileContentsPi(receivedPacket.getData(), 1);
         } else if (Flag.isSet(Flag.ACK, flags)){
             int[] seqAndAck = updateSeqAndAck(getSeqAndAck(header));
             sendSimpleReply(seqAndAck);
