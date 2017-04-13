@@ -1,9 +1,11 @@
 package com.nedap.university;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.*;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * Client class with all the functions the client needs.
@@ -12,41 +14,47 @@ import java.net.*;
  */
 class Client extends Thread {
     private static boolean dnsResolved = false;
-    private static int myPort = 7272; //Needs to be fixed because mySocket.getPort only works once it's connected
-    private static InetAddress PiAddress;
-    private static int PiPort;
     private static boolean isConnected = true;
+    private static volatile boolean packetArrived = false; //volatile because receiver thread writes this one --> See report for more info //TODO:include in report
     private static DatagramSocket mySocket;
-    private static volatile boolean packetArrived = false; //TODO: find out what volatile really means?
     private static Receiver myReceiver;
     private static Sender mySender;
 
     private Client(){
         myReceiver = new Receiver(this);
-        mySender = new Sender(this);
+        mySender = new Sender(this.getSocket());
     }
 
     static void init(){
+        int myPort = 7272;
         try {
             mySocket = new DatagramSocket(myPort);
             Client client = new Client();
             client.start();
             myReceiver.start();
             mySender.init();
-            mySender.sendDNSPacket(); //You can always do this because you only need the broadcast info;
+
+            mySender.sendDNSRequest(); //You can always do this because you only need the broadcast info;
+
+            while(isConnected){
+                String input = handleTerminalInput();
+                if (dnsResolved) {
+                    if (input.equals("files")) {
+                        System.out.println("Send file request");
+                        File file = new File("photo1.jpg");
+                        mySender.sendFile(file, Utils.createSha1(file));
+                    }
+                }
+                if (input.equals("shutdown")){
+                    shutDown();
+                }
+            }
         } catch (SocketException e ) {
             System.out.println("Socket could not be opened");
-        }
-
-        while(isConnected){
-            String input = handleTerminalInput();
-            if (input.equals("files")){
-                System.out.println("Send file request");
-                mySender.sendFile();
-            }
-            if (input.equals("shutdown")){
-                shutDown();
-            }
+        } catch (NoSuchAlgorithmException e){
+            System.out.println("You have provided an invalid algorithm");
+        } catch (IOException e){
+            System.out.println("IO exception from SHA");
         }
     }
 
@@ -56,8 +64,12 @@ class Client extends Thread {
     public void run(){
         while(isConnected) {
             if (packetArrived){
-                System.out.println("getting packet");
                 inspectPacket(myReceiver.getFirstPacket());
+            }
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             }
         }
         System.out.println("finished");
@@ -81,18 +93,17 @@ class Client extends Thread {
     private static void inspectPacket(DatagramPacket received){
         Packet receivedPacket = Packet.bytesToPacket(received.getData());
         UDPHeader header = receivedPacket.getHeader();
-        if(Flag.isSet(Flag.DNS,header.getFlags())){
-            PiAddress = received.getAddress();
-            mySender.setPiAddress(PiAddress);
-            PiPort = received.getPort();
-            mySender.setPiPort(PiPort);
-
+        if(Flag.isSet(Flag.DNS,header.getFlags()) && Flag.isSet(Flag.ACK, header.getFlags())){ //TODO: Is ACK response needed here?
+            mySender.setDestAddress(received.getAddress());
+            mySender.setDestPort(received.getPort());
+            dnsResolved = true;
+            mySender.sendDNSAck();
         }
-
-        if (Flag.isSet(Flag.ACK, header.getFlags()) && PiAddress != null) {
+        if (Flag.isSet(Flag.ACK, header.getFlags()) && dnsResolved) {
             int[] seqAndAck = getSeqAndAck(header);
-            //mySender.sendSimpleReply(seqAndAck); //TODO: Should be passed to the client who tells the sender
+            //mySender.sendSimpleReply(seqAndAck);
         }
+
         receivedPacket.print();
     }
 
@@ -110,6 +121,7 @@ class Client extends Thread {
     DatagramSocket getSocket(){
         return mySocket;
     }
+
     private static void shutDown(){
         isConnected = false;
     }

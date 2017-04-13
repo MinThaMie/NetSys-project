@@ -22,7 +22,7 @@ public class Main {
         while (keepAlive) {
             try {
                 if(isPi){
-                    Pi.runPi();
+                   // Pi.runPi();
                 }
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
