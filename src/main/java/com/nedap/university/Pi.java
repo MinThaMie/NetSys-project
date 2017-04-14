@@ -110,6 +110,8 @@ class Pi  extends Thread{
 
         if (Flag.isSet(Flag.FILES, header.getFlags()) && !Flag.isSet(Flag.FIN, header.getFlags())){
             receiveFileChunks(receivedPacket.getData());
+            //int[] seqAndAck = getSeqAndAck(header);
+            //mySender.sendSimpleReply(seqAndAck);
         }
 
         if (Flag.isSet(Flag.FILES, header.getFlags()) && Flag.isSet(Flag.FIN, header.getFlags())){

@@ -10,7 +10,7 @@ import java.util.LinkedList;
  * This class is used to send packets
  * Created by anne-greeth.vanherwijnen on 12/04/2017.
  */
-class Sender {
+class Sender implements ITimeoutEventHandler{
 
     private static int myPort;
     private static DatagramSocket mySocket;
@@ -126,15 +126,51 @@ class Sender {
 
     private void sendFileChuck(byte[] fileChunk){
         Packet myPacket = new Packet(myPort, destPort, new Flag[]{Flag.FILES}, 0, 0, fileChunk);
-        byte[] myBytes = Packet.getByteRepresentation(myPacket);
-        try{
+        sendPacket(myPacket);
+        waitForAck(myPacket);
+    }
+
+    public void TimeoutElapsed(Packet packet) {
+        System.out.println("Should resendf something");
+            sendPacket(packet);
+            System.out.println("Resent packet with ackNo: " + packet.getHeader().getAckNo()); //Does not need to waitForAck, cause it's already waiting
+            setTimeOutforPacket(packet);
+    }
+
+    void sendPacket(Packet packet){
+        byte[] myBytes = Packet.getByteRepresentation(packet);
+        try {
             mySocket.send(new DatagramPacket(myBytes, myBytes.length, destAddress, destPort));
         } catch (UnknownHostException e){
             System.out.println("The host is unknown");
         } catch (IOException e){
             System.out.println("Something else went wrong");
         }
+    }
 
+    /**
+     * Wait for acknowledgment of given packet, if received stop the timeout of that
+     * given packet.
+     * @param sendPacket Packet that is send.
+     */
+    private void waitForAck(Packet sendPacket) {
+        setTimeOutforPacket(sendPacket);
+
+        receivedAck = false;
+        while (!receivedAck) {
+            // Wait for response from sender packet from server
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                receivedAck = true;
+            }
+        }
+        Utils.Timeout.stopTimeOut(sendPacket);
+    }
+
+    private void setTimeOutforPacket(Packet sendPacket) {
+        // schedule a timer for 1000 ms into the future, just to show how that works:
+        Utils.Timeout.SetTimeout(3000, this, sendPacket);
     }
 
     static int[] updateSeqAndAck(int[] array){
@@ -142,6 +178,10 @@ class Sender {
         result[0] = array[1];
         result[1] = array[0] + 1;
         return result;
+    }
+
+    void setReceivedAck(){
+        receivedAck = true;
     }
 
     void setDestPort(int port){

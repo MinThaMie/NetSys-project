@@ -28,6 +28,7 @@ class Client extends Thread {
     static void init(){
         int myPort = 7272;
         try {
+            Utils.Timeout.Start();
             mySocket = new DatagramSocket(myPort);
             Client client = new Client();
             client.start();
@@ -40,7 +41,7 @@ class Client extends Thread {
                 String input = handleTerminalInput();
                 if (dnsResolved) {
                     if (input.equals("files")) {
-                        System.out.println("Send file request");
+                        System.out.println("Send file");
                         File file = new File("photo1.jpg");
                         mySender.sendFile(file, Utils.createSha1(file));
                     }
@@ -101,6 +102,7 @@ class Client extends Thread {
         }
         if (Flag.isSet(Flag.ACK, header.getFlags()) && dnsResolved) {
             int[] seqAndAck = getSeqAndAck(header);
+            mySender.setReceivedAck();
             //mySender.sendSimpleReply(seqAndAck);
         }
 
