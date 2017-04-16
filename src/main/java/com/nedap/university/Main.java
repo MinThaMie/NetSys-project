@@ -9,7 +9,6 @@ public class Main {
 
     public static void main(String[] args) {
         running = true;
-        System.out.println("Hello, Nedap University!");
         String whatAmI = args[0];
         boolean isPi = whatAmI.equals("raspberry");
 
@@ -19,7 +18,7 @@ public class Main {
             Client.init();
         }
 
-        while (keepAlive) {
+        while (keepAlive) { //TODO: check if this code is still nessecary since it does not do anything atm
             try {
                 if(isPi){
                    // Pi.runPi();

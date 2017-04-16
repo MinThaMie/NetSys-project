@@ -30,8 +30,12 @@ public class Utils {
         return (int) value;
     }
 
-    public static byte[] StringArraytoByteArray(String[] strings){
-        return new byte[]{};
+    static String stringArrayToString(String[] sArray) {
+        return Arrays.toString(sArray);
+    }
+
+    static String[] splitString(String toBeSplit, String splitBy){
+        return toBeSplit.split(splitBy);
     }
 
     static byte[] setFileContentsPi(byte[] fileContents, int id) {

@@ -26,6 +26,7 @@ class Client extends Thread {
     }
 
     static void init(){
+        TerminalOutput.welcomeMSG();
         int myPort = 7272;
         try {
             Utils.Timeout.Start();
@@ -99,6 +100,7 @@ class Client extends Thread {
             mySender.setDestPort(received.getPort());
             dnsResolved = true;
             mySender.sendDNSAck();
+            TerminalOutput.DNSResolved();
         }
         if (Flag.isSet(Flag.ACK, header.getFlags()) && dnsResolved) {
             int[] seqAndAck = getSeqAndAck(header);
