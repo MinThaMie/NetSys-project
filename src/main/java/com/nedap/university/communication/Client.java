@@ -1,4 +1,11 @@
-package com.nedap.university;
+package com.nedap.university.communication;
+
+import com.nedap.university.communication.Sender;
+import com.nedap.university.packet.Flag;
+import com.nedap.university.packet.Packet;
+import com.nedap.university.packet.UDPHeader;
+import com.nedap.university.utils.TerminalOutput;
+import com.nedap.university.utils.Utils;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -12,7 +19,7 @@ import java.security.NoSuchAlgorithmException;
  * The class is package private.
  * Created by anne-greeth.vanherwijnen on 11/04/2017.
  */
-class Client extends Thread {
+public class Client extends Thread {
     private static boolean dnsResolved = false;
     private static boolean isConnected = true;
     private static volatile boolean packetArrived = false; //volatile because receiver thread writes this one --> See report for more info //TODO:include in report
@@ -26,7 +33,7 @@ class Client extends Thread {
         mySender = new Sender(this);
     }
 
-    static void init(){
+    public static void init(){
         TerminalOutput.welcomeMSG();
         int myPort = 7272;
         try {

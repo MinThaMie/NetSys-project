@@ -1,4 +1,9 @@
-package com.nedap.university;
+package com.nedap.university.communication;
+
+import com.nedap.university.communication.Client;
+import com.nedap.university.communication.Pi;
+import com.nedap.university.packet.Packet;
+import com.nedap.university.packet.UDPHeader;
 
 import java.io.IOException;
 import java.net.DatagramPacket;

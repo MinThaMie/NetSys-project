@@ -1,11 +1,16 @@
-package com.nedap.university;
+package com.nedap.university.communication;
 
+
+import com.nedap.university.packet.Flag;
+import com.nedap.university.packet.Packet;
+import com.nedap.university.packet.UDPHeader;
+import com.nedap.university.utils.Statics;
+import com.nedap.university.utils.Utils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.*;
-import java.util.Arrays;
 
 /**
  * Pi class with all the functions and functionalities for the pi.
@@ -13,7 +18,7 @@ import java.util.Arrays;
  * Created by anne-greeth.vanherwijnen on 11/04/2017.
  */
 
-class Pi  extends Thread{
+public class Pi  extends Thread{
     private static MulticastSocket broadCastSocket;
     private static DatagramSocket communicationSocket;
     private static boolean dnsIsSet = false;
@@ -29,11 +34,11 @@ class Pi  extends Thread{
         mySender = new Sender(this);
     }
 
-    static void init(){
+    public static void init(){
         int COMMUNICATION_PORT = 9292;
         try{
             isConnected = true;
-            broadCastSocket = new MulticastSocket(Statics.BROADCASTPORT.value);
+            broadCastSocket = new MulticastSocket(Statics.BROADCASTPORT.getValue());
             communicationSocket = new DatagramSocket(COMMUNICATION_PORT); //TODO: maybe move this to the run method and only when there is a dnsSet
             Pi pi = new Pi();
             pi.start();

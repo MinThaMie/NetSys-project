@@ -1,5 +1,7 @@
-package com.nedap.university;
+package com.nedap.university.utils;
 
+import com.nedap.university.utils.FilePrep;
+import com.nedap.university.utils.Utils;
 import org.junit.Before;
 import org.junit.Test;
 

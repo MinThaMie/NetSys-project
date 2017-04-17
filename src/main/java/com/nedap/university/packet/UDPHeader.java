@@ -1,4 +1,6 @@
-package com.nedap.university;
+package com.nedap.university.packet;
+
+import com.nedap.university.utils.Statics;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -7,7 +9,7 @@ import java.io.IOException;
  * UDP header class to build a my own header to go on top of the data including ARQ implementation
  * Created by anne-greeth.vanherwijnen on 10/04/2017.
  */
-class UDPHeader{
+public class UDPHeader{
     private int sourceport;
     private int destport;
     private int UDPlength;
@@ -19,7 +21,7 @@ class UDPHeader{
     UDPHeader(int sourceport, int destport, int flags, int seqNo, int ackNo, byte[] data){
         this.sourceport = sourceport; //16bit sourceport
         this.destport = destport; //16bit destport
-        this.UDPlength = Statics.HEADERLENGHT.value + data.length;//16 bit UDPlength = UDP header + data
+        this.UDPlength = Statics.HEADERLENGHT.getValue() + data.length;//16 bit UDPlength = UDP header + data
         this.flags = flags; // 8 bits flags
         this.seqNo = seqNo; //16 bits sequence number
         this.ackNo = ackNo; // 16 bits ack number
@@ -65,31 +67,31 @@ class UDPHeader{
         return byteFlags;
     }
 
-    int getSourceport(){
+    public int getSourceport(){
         return this.sourceport;
     }
 
-    int getDestport(){
+    public int getDestport(){
         return this.destport;
     }
 
-    int getUDPlength(){
+    public int getUDPlength(){
         return this.UDPlength;
     }
 
-    int getFlags(){
+    public int getFlags(){
         return this.flags;
     }
 
-    int getSeqNo(){
+    public int getSeqNo(){
         return this.seqNo;
     }
 
-    int getAckNo(){
+    public int getAckNo(){
         return this.ackNo;
     }
 
-    int getChecksum(){
+    public int getChecksum(){
         return this.checksum;
     }
 }

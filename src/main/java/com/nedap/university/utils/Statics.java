@@ -1,4 +1,4 @@
-package com.nedap.university;
+package com.nedap.university.utils;
 
 /**
  * Statics class to access the static values for ports and IP-address quick and easy across the files
@@ -15,5 +15,13 @@ public enum Statics {
     }
     Statics(String string){
         this.string = string;
+    }
+
+    public int getValue(){
+        return this.value;
+    }
+
+    public String getString(){
+        return  this.string;
     }
 }

@@ -1,4 +1,7 @@
-package com.nedap.university;
+package com.nedap.university.utils;
+
+import com.nedap.university.packet.Packet;
+import com.nedap.university.packet.UDPHeader;
 
 import java.io.*;
 import java.security.MessageDigest;
@@ -20,7 +23,7 @@ public class Utils {
         return formatter.toString();
     }
 
-    static int bytesToInt(byte[] bytes){
+    public static int bytesToInt(byte[] bytes){
         long value = 0;
         for (int i = 0; i < bytes.length; i++)
         {
@@ -29,11 +32,11 @@ public class Utils {
         return (int) value;
     }
 
-    static String stringArrayToString(String[] sArray) {
+    public static String stringArrayToString(String[] sArray) {
         return String.join(" ", sArray);
     }
 
-    static String[] splitString(String toBeSplit, String splitBy){
+    public static String[] splitString(String toBeSplit, String splitBy){
         return toBeSplit.split(splitBy);
     }
 
@@ -53,7 +56,7 @@ public class Utils {
         return result;
     }
 
-    static byte[] setFileContentsPi(byte[] fileContents, int id) {
+    public static byte[] setFileContentsPi(byte[] fileContents, int id) {
         File fileToWrite = new File(String.format("/home/pi/files/plaatje%d.jpg", id)); //IS piPath
         byte[] result = new byte[]{};
         try (FileOutputStream fileStream = new FileOutputStream(fileToWrite)) {
@@ -73,7 +76,7 @@ public class Utils {
         return result;
     }
 
-    static void setFileContentsClient(byte[] fileContents, int id) {
+    public static void setFileContentsClient(byte[] fileContents, int id) {
         File fileToWrite = new File(String.format("plaatje%d.jpg", id)); //is Client path
         try (FileOutputStream fileStream = new FileOutputStream(fileToWrite)) {
             for (byte fileContent : fileContents) {
@@ -84,7 +87,7 @@ public class Utils {
         }
     }
 
-    static byte[] createSha1(File file) throws IOException, NoSuchAlgorithmException{ //TODO: throws is niet zo netjes, maar heeft wel als voordeel dat alles wel bestaat
+    public static byte[] createSha1(File file) throws IOException, NoSuchAlgorithmException{ //TODO: throws is niet zo netjes, maar heeft wel als voordeel dat alles wel bestaat
         MessageDigest digest = MessageDigest.getInstance("SHA-1");
         InputStream fileInput = new FileInputStream(file);
         int n = 0;
@@ -98,10 +101,9 @@ public class Utils {
         return digest.digest();
     }
 
-    static boolean checkChecksum(byte[] checksumReceived, byte[] checksumCalculated){
+    public static boolean checkChecksum(byte[] checksumReceived, byte[] checksumCalculated){
         return Arrays.equals(checksumReceived, checksumCalculated);
     }
-
 
     /**
      * Helper class for setting timeouts. Supplied for convenience.

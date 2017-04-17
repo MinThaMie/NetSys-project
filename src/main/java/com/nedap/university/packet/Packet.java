@@ -1,4 +1,7 @@
-package com.nedap.university;
+package com.nedap.university.packet;
+
+import com.nedap.university.utils.Statics;
+import com.nedap.university.utils.Utils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -12,7 +15,7 @@ public class Packet {
     private UDPHeader header;
     private byte[] data;
 
-    Packet(int sourceport, int destport, Flag[] flags, int seqNo, int ackNo, byte[] data){
+    public Packet(int sourceport, int destport, Flag[] flags, int seqNo, int ackNo, byte[] data){
         this.header = new UDPHeader(sourceport,destport,Flag.setFlags(flags), seqNo, ackNo ,data);
         this.data = data;
     }
@@ -34,7 +37,7 @@ public class Packet {
      * nested UPDHeader class which creates the UDPheader for the packer
      */
 
-    static byte[] getByteRepresentation(Packet packet){
+    public static byte[] getByteRepresentation(Packet packet){
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         try {
             outputStream.write(packet.getHeader().getHeaderByteRepresentation());
@@ -45,18 +48,18 @@ public class Packet {
         return outputStream.toByteArray( );
     }
 
-    UDPHeader getHeader(){
+    public UDPHeader getHeader(){
         return this.header;
     }
 
-    byte[] getData(){
+    public byte[] getData(){
         return this.data;
     }
 
-    static Packet bytesToPacket(byte[] packet){
-        byte[] headerBytes = Arrays.copyOfRange(packet, 0, Statics.HEADERLENGHT.value);
+    public static Packet bytesToPacket(byte[] packet){
+        byte[] headerBytes = Arrays.copyOfRange(packet, 0, Statics.HEADERLENGHT.getValue());
         UDPHeader header = headerBytesToHeader(headerBytes);
-        byte[] data = Arrays.copyOfRange(packet, Statics.HEADERLENGHT.value, header.getUDPlength());
+        byte[] data = Arrays.copyOfRange(packet, Statics.HEADERLENGHT.getValue(), header.getUDPlength());
         return new Packet(header, data);
     }
 
@@ -71,7 +74,7 @@ public class Packet {
         return new UDPHeader(sourcePort, destPort, udpLength, flags, seqNo, ackNo, checksum);
     }
 
-    void print(){
+    public void print(){
         System.out.println("This packet: "  + this.getHeader().getSourceport() + " " +this.getHeader().getDestport() + ", seqNo " + this.getHeader().getSeqNo() + " ackNo " + this.getHeader().getAckNo());
     }
 

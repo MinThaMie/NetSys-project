@@ -1,9 +1,17 @@
-package com.nedap.university;
+package com.nedap.university.communication;
+
+import com.nedap.university.communication.Pi;
+import com.nedap.university.communication.Client;
+import com.nedap.university.packet.Flag;
+import com.nedap.university.packet.Packet;
+import com.nedap.university.utils.FilePrep;
+import com.nedap.university.utils.ITimeoutEventHandler;
+import com.nedap.university.utils.Statics;
+import com.nedap.university.utils.Utils;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.*;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -11,7 +19,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * This class is used to send packets
  * Created by anne-greeth.vanherwijnen on 12/04/2017.
  */
-class Sender extends Thread implements ITimeoutEventHandler{
+class Sender extends Thread implements ITimeoutEventHandler {
 
     private static int myPort;
     private DatagramSocket mySocket;
@@ -79,10 +87,10 @@ class Sender extends Thread implements ITimeoutEventHandler{
     }
 
     void sendDNSRequest(){ //TODO: Find out if there is a way to do this also with the sendPacket function
-        Packet myPacket = new Packet(myPort,Statics.BROADCASTPORT.value, new Flag[]{Flag.DNS}, this.seqNo, this.ackNo, new byte[]{});
+        Packet myPacket = new Packet(myPort, Statics.BROADCASTPORT.getValue(), new Flag[]{Flag.DNS}, this.seqNo, this.ackNo, new byte[]{});
         byte[] myBytes = Packet.getByteRepresentation(myPacket);
         try {
-            mySocket.send(new DatagramPacket(myBytes, myBytes.length, InetAddress.getByName(Statics.BROADCASTADDRESS.string), Statics.BROADCASTPORT.value));
+            mySocket.send(new DatagramPacket(myBytes, myBytes.length, InetAddress.getByName(Statics.BROADCASTADDRESS.getString()), Statics.BROADCASTPORT.getValue()));
         } catch (UnknownHostException e){
             System.out.println("The host is unknown");
         } catch (IOException e){

@@ -1,4 +1,4 @@
-package com.nedap.university;
+package com.nedap.university.utils;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -58,7 +58,7 @@ public class FilePrep {
         return result;
     }
 
-    static LinkedList<byte[]> filePrep(File file){
+    public static LinkedList<byte[]> filePrep(File file){
         return getBytesToPacketSize(getBytesFromFile(file));
     }
 

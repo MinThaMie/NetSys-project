@@ -1,5 +1,8 @@
 package com.nedap.university;
 
+import com.nedap.university.communication.Client;
+import com.nedap.university.communication.Pi;
+
 public class Main {
 
     private static boolean keepAlive = true;

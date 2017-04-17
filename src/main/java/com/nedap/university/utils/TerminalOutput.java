@@ -1,16 +1,18 @@
-package com.nedap.university;
+package com.nedap.university.utils;
+
+import com.nedap.university.utils.Utils;
 
 /**
  * Created by anne-greeth.vanherwijnen on 16/04/2017.
  */
 public class TerminalOutput {
 
-    static void welcomeMSG(){
+    public static void welcomeMSG(){
         System.out.println("Welcome! You can type commands and use them to use file transfer service");
         menuMSG();
     }
 
-    static void menuMSG(){
+    public static void menuMSG(){
         System.out.println( "You can type the following commands:" + '\n' +
             "- myFiles :to see your own files" + '\n' +
             "* piFiles :to request the files on the pi" + '\n' +
@@ -21,11 +23,11 @@ public class TerminalOutput {
             "You can always use the commands marked with the -. The commands marked with the * only once you are connected to the Pi.");//TODO: print that DSN has been resolved
     }
 
-    static void DNSResolved(){
+    public static void DNSResolved(){
         System.out.println("A connection has been established with the Pi, you can now use the upload, download and file request commands.");
     }
 
-    static void showFiles(String string){ //TODO: Implement that this index can be used to retrieve the file
+    public static void showFiles(String string){ //TODO: Implement that this index can be used to retrieve the file
         String[] allFiles = Utils.splitString(string, " ");
         int index = 0;
         System.out.println("The files are:");

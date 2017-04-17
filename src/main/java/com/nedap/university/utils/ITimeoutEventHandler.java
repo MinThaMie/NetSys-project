@@ -1,4 +1,6 @@
-package com.nedap.university;
+package com.nedap.university.utils;
+
+import com.nedap.university.packet.Packet;
 
 /**
  * Interface for timeout event handlers

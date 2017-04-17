@@ -1,5 +1,7 @@
 package com.nedap.university;
 
+import com.nedap.university.utils.TerminalOutput;
+import com.nedap.university.utils.Utils;
 import org.junit.Before;
 import org.junit.Test;
 

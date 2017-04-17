@@ -1,4 +1,4 @@
-package com.nedap.university;
+package com.nedap.university.packet;
 
 /**
  * Flag ENUM to easily and obviously set and check flags

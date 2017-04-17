@@ -1,5 +1,6 @@
 package com.nedap.university;
 
+import com.nedap.university.packet.Flag;
 import org.junit.Test;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
