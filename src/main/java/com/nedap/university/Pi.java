@@ -26,7 +26,7 @@ class Pi  extends Thread{
 
     private Pi(){
         myReceiver = new Receiver(this);
-        mySender = new Sender(this.getCommunicationSocket());
+        mySender = new Sender(this);
     }
 
     static void init(){
@@ -104,7 +104,8 @@ class Pi  extends Thread{
         if (Flag.isSet(Flag.DNS, header.getFlags()) && Flag.isSet(Flag.ACK, header.getFlags())){
             dnsIsSet = true;
         }
-        if (Flag.isSet(Flag.ACK, header.getFlags())) {
+        if (Flag.isSet(Flag.ACK, header.getFlags())) { //Received ack, so can stop the timeout for that packet //TODO: normally no reply on Ack
+            mySender.setReceivedAck(receivedPacket);
             mySender.sendSimpleReply();
         }
 

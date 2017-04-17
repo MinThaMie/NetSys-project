@@ -22,14 +22,22 @@ class Sender extends Thread implements ITimeoutEventHandler{
     private static int lastAckReceived = -1;
     private static int slidingWindowSize = 5;
     private static int lastFrameSend = -1;
-    private int seqNo = 0;
-    private int ackNo = 1;
+    private int seqNo;
+    private int ackNo;
 
 
-    Sender(DatagramSocket socket){
-        this.mySocket = socket;
+    Sender(Client client){
+        this.mySocket = client.getSocket();
         this.queue = new ConcurrentLinkedQueue<>(); //TODO: Check if this needs to be concurrent
+        this.seqNo = 0;
+        this.ackNo = 1;
+    }
 
+    Sender(Pi pi){
+        this.mySocket = pi.getCommunicationSocket();
+        this.queue = new ConcurrentLinkedQueue<>();
+        this.seqNo = 1;
+        this.ackNo = 2;
     }
 
     public void run(){
@@ -129,10 +137,9 @@ class Sender extends Thread implements ITimeoutEventHandler{
     }
 
     public void TimeoutElapsed(Packet packet) {
-        System.out.println("Should resend something");
-            sendPacket(packet);
-            System.out.println("Resent packet with ackNo: " + packet.getHeader().getAckNo()); //Does not need to waitForAck, cause it's already waiting
-            setTimeOutforPacket(packet);
+        sendPacket(packet);
+        System.out.println("Resent packet with ackNo: " + packet.getHeader().getAckNo()); //Does not need to waitForAck, cause it's already waiting
+        setTimeOutforPacket(packet);
     }
 
     private void setTimeOutforPacket(Packet sendPacket) {
@@ -143,6 +150,7 @@ class Sender extends Thread implements ITimeoutEventHandler{
     void setReceivedAck(Packet packet){
         Utils.Timeout.stopTimeOut(packet);
         lastAckReceived = packet.getHeader().getAckNo();
+        System.out.println("updated lack to " + lastAckReceived);
     }
 
     void setDestPort(int port){

@@ -23,7 +23,7 @@ class Client extends Thread {
 
     private Client(){
         myReceiver = new Receiver(this);
-        mySender = new Sender(this.getSocket());
+        mySender = new Sender(this);
     }
 
     static void init(){
@@ -107,7 +107,6 @@ class Client extends Thread {
             mySender.setReceivedAck(receivedPacket);
             mySender.sendSimpleReply();
         }
-
         receivedPacket.print();
     }
 
