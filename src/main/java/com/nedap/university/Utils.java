@@ -112,7 +112,7 @@ public class Utils {
      */
     public static class Timeout implements Runnable {
         private static Map<Date, Map<ITimeoutEventHandler, List<Packet>>> eventHandlers = new HashMap<>();
-        private static Map<Object, SimpleEntry<Date,ITimeoutEventHandler>> packetToDate = new HashMap<>();
+        private static Map<Packet, SimpleEntry<Date,ITimeoutEventHandler>> packetToDate = new HashMap<>();
         private static Map<Integer, Packet> AckToPacket = new HashMap<>();
         private static Thread eventTriggerThread;
         private static boolean started = false;
@@ -133,6 +133,8 @@ public class Utils {
                             System.out.println("Removed timeout");
                         }
                     }
+                } else {
+                    System.out.println("The packet is not in the packetToDate"); //TODO: this is triggered, because packetToDate.get returns null
                 }
             }
         }
@@ -156,7 +158,7 @@ public class Utils {
         }
 
         /**
-         * Stops the helper thread
+         * Stops the helper thread //TODO: this is never used
          */
         public static void Stop() {
             if (!started)
@@ -193,9 +195,9 @@ public class Utils {
                         new ArrayList<>());
             }
             eventHandlers.get(elapsedMoment).get(handler).add(packet);
+            packetToDate.put(packet, new SimpleEntry<>(elapsedMoment,handler));
             AckToPacket.put(packet.getHeader().getAckNo(), packet);
             lock.unlock();
-            System.out.println("Setted time-out");
         }
 
         /**
@@ -243,7 +245,6 @@ public class Utils {
                     // deadlocks
                     for (ITimeoutEventHandler handler : handlersToInvoke
                             .keySet()) {
-                        System.out.println("Invoke the timeout");
                         handlersToInvoke.get(handler).forEach(handler::TimeoutElapsed);
                     }
                     handlersToInvoke.clear();
