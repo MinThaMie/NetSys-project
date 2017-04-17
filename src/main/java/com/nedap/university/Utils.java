@@ -20,7 +20,6 @@ public class Utils {
         return formatter.toString();
     }
 
-
     static int bytesToInt(byte[] bytes){
         long value = 0;
         for (int i = 0; i < bytes.length; i++)
@@ -31,11 +30,27 @@ public class Utils {
     }
 
     static String stringArrayToString(String[] sArray) {
-        return Arrays.toString(sArray);
+        return String.join(" ", sArray);
     }
 
     static String[] splitString(String toBeSplit, String splitBy){
         return toBeSplit.split(splitBy);
+    }
+
+
+    //TODO: PROBABLY NOT NEEDED ANYMORE because i use just + 1 for my seq and acks
+    static int[] getSeqAndAck(UDPHeader header){
+        int[] result = new int[2];
+        result[0] = header.getSeqNo(); //get seqNo
+        result[1] = header.getAckNo(); //get ackNo
+        return result;
+    }
+
+    static int[] updateSeqAndAck(int[] array){
+        int[] result = new int[2];
+        result[0] = array[1]; //Sequence number is the ack from the previous packet
+        result[1] = array[0] + 1; //Ack number is the sequence number + 1
+        return result;
     }
 
     static byte[] setFileContentsPi(byte[] fileContents, int id) {

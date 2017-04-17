@@ -38,6 +38,7 @@ class Pi  extends Thread{
             Pi pi = new Pi();
             pi.start();
             myReceiver.start();
+            mySender.start();
         }catch(IOException e){
             e.getMessage();
         }
@@ -104,8 +105,7 @@ class Pi  extends Thread{
             dnsIsSet = true;
         }
         if (Flag.isSet(Flag.ACK, header.getFlags())) {
-            int[] seqAndAck = getSeqAndAck(header);
-            mySender.sendSimpleReply(seqAndAck);
+            mySender.sendSimpleReply();
         }
 
         if (Flag.isSet(Flag.FILES, header.getFlags()) && !Flag.isSet(Flag.FIN, header.getFlags())){

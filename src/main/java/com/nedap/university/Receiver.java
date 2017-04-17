@@ -16,6 +16,8 @@ public class Receiver extends Thread{
     private Pi pi;
     private DatagramSocket socket;
     ConcurrentLinkedQueue<DatagramPacket> queue;
+    private int lastFrameReceived = -1;
+    private int receiverWindowSize = 3;
     Receiver(Client client){
         this.client = client;
         this.pi = null;
@@ -35,33 +37,22 @@ public class Receiver extends Thread{
         listener.start();
     }
 
-
-    DatagramPacket getFirstPacket(){
-        DatagramPacket result =  queue.remove();
-        if (queue.size() == 0){
-            if(getClient() != null) {
-                client.packetAvailable(false);
-            }
-            else {
-                pi.packetAvailable(false);
-            }
-        }
-        return result;
-    }
-
-
     class Listener extends Thread{
         Listener(){
         }
 
         public void run(){
             while(isReceiving){
-                queue.add(receiveDatagramPacket());
-                if(queue.size() > 0){
-                    if(getClient() != null) {
-                        client.packetAvailable(true);
-                    } else {
-                        pi.packetAvailable(true);
+                DatagramPacket received = receiveDatagramPacket();
+                if(checkIfPacketInsideReceiverWindow(received)) { //Check if the received packet is inside the receiver window, if not, the packet is not presented to the client/pi
+                    queue.add(received);
+                    lastFrameReceived = Packet.bytesToPacket(received.getData()).getHeader().getSeqNo();
+                    if (queue.size() > 0) {
+                        if (getClient() != null) {
+                            client.packetAvailable(true);
+                        } else {
+                            pi.packetAvailable(true);
+                        }
                     }
                 }
             }
@@ -80,7 +71,27 @@ public class Receiver extends Thread{
         return recv;
     }
 
+
+    DatagramPacket getFirstPacket(){
+        DatagramPacket result =  queue.remove();
+        if (queue.size() == 0){
+            if(getClient() != null) {
+                client.packetAvailable(false);
+            }
+            else {
+                pi.packetAvailable(false);
+            }
+        }
+        return result;
+    }
+
     private Client getClient(){
         return this.client;
+    }
+
+    private boolean checkIfPacketInsideReceiverWindow(DatagramPacket received){
+        Packet receivedPacket = Packet.bytesToPacket(received.getData());
+        UDPHeader header = receivedPacket.getHeader();
+        return header.getSeqNo() <= lastFrameReceived + receiverWindowSize;
     }
 }
