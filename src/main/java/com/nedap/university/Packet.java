@@ -72,7 +72,7 @@ public class Packet {
     }
 
     void print(){
-        System.out.println("This packet: "  + this.getHeader().getSourceport() + " " +this.getHeader().getDestport() + " " + this.getHeader().getFlags());
+        System.out.println("This packet: "  + this.getHeader().getSourceport() + " " +this.getHeader().getDestport() + ", seqNo " + this.getHeader().getSeqNo() + " ackNo " + this.getHeader().getAckNo());
     }
 
 
