@@ -93,19 +93,21 @@ public class Utils {
      *
      * @author Jaco ter Braak & Frans van Dijk, Twente University
      * @version 09-02-2016
+     * @updated by Anne-Greeth
      */
     public static class Timeout implements Runnable {
         private static Map<Date, Map<ITimeoutEventHandler, List<Packet>>> eventHandlers = new HashMap<>();
         private static Map<Object, SimpleEntry<Date,ITimeoutEventHandler>> packetToDate = new HashMap<>();
+        private static Map<Integer, Packet> AckToPacket = new HashMap<>();
         private static Thread eventTriggerThread;
         private static boolean started = false;
         private static ReentrantLock lock = new ReentrantLock();
 
         /**
          * Stop timeout of given tag (acknowledged packet)
-         * @param packet
          */
-        public static void stopTimeOut(Packet packet) {
+        public static void stopTimeOut(Packet receivedPacket) {
+            Packet packet = getPacketByAck(receivedPacket.getHeader().getSeqNo());
             if(packet != null) {
                 if(packetToDate.get(packet) != null) {
                     Date elapsedMoment = packetToDate.get(packet).getKey();
@@ -118,6 +120,13 @@ public class Utils {
                     }
                 }
             }
+        }
+
+        /**
+         * The seqNo of the received packet is equal to the ackNo of the send packet
+         */
+        public static Packet getPacketByAck(int seqNo){
+            return AckToPacket.get(seqNo);
         }
 
         /**
@@ -169,7 +178,7 @@ public class Utils {
                         new ArrayList<>());
             }
             eventHandlers.get(elapsedMoment).get(handler).add(packet);
-
+            AckToPacket.put(packet.getHeader().getAckNo(), packet);
             lock.unlock();
             System.out.println("Setted time-out");
         }
@@ -193,7 +202,6 @@ public class Utils {
 
                     for (Date date : eventHandlers.keySet()) {
                         if (date.before(now)) {
-                            System.out.println("should trigger time-out");
                             datesToRemove.add(date);
                             for (ITimeoutEventHandler handler : eventHandlers.get(date).keySet()) {
                                 if (!handlersToInvoke.containsKey(handler)) {
@@ -227,7 +235,6 @@ public class Utils {
 
                     Thread.sleep(1);
                 } catch (InterruptedException e) {
-                    System.out.println("SHIT CRASHED!!!!"); //TODO: REMOVE!!!!
                     runThread = false;
                 }
             }
