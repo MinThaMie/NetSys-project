@@ -19,6 +19,7 @@ class Client extends Thread {
     private static DatagramSocket mySocket;
     private static Receiver myReceiver;
     private static Sender mySender;
+    private static String filePath = "files";
 
     private Client(){
         myReceiver = new Receiver(this);
@@ -34,7 +35,7 @@ class Client extends Thread {
             Client client = new Client();
             client.start();
             myReceiver.start();
-            mySender.init();
+            mySender.start();
 
             mySender.sendDNSRequest(); //You can always do this because you only need the broadcast info;
 
@@ -103,9 +104,8 @@ class Client extends Thread {
             TerminalOutput.DNSResolved();
         }
         if (Flag.isSet(Flag.ACK, header.getFlags()) && dnsResolved) {
-            int[] seqAndAck = getSeqAndAck(header);
-            mySender.setReceivedAck();
-            //mySender.sendSimpleReply(seqAndAck);
+            mySender.setReceivedAck(receivedPacket);
+            mySender.sendSimpleReply();
         }
 
         receivedPacket.print();
@@ -113,13 +113,6 @@ class Client extends Thread {
 
     void packetAvailable(boolean bool){
         packetArrived = bool;
-    }
-
-    private static int[] getSeqAndAck(UDPHeader header){
-        int[] result = new int[2];
-        result[0] = header.getSeqNo(); //get seqNo
-        result[1] = header.getAckNo(); //get ackNo
-        return result;
     }
 
     DatagramSocket getSocket(){
