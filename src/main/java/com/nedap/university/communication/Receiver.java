@@ -2,6 +2,7 @@ package com.nedap.university.communication;
 
 import com.nedap.university.communication.Client;
 import com.nedap.university.communication.Pi;
+import com.nedap.university.packet.Flag;
 import com.nedap.university.packet.Packet;
 import com.nedap.university.packet.UDPHeader;
 
@@ -51,7 +52,7 @@ public class Receiver extends Thread{
                 DatagramPacket received = receiveDatagramPacket();
                 if(checkIfPacketInsideReceiverWindow(received)) { //Check if the received packet is inside the receiver window, if not, the packet is not presented to the client/pi
                     queue.add(received);
-                    lastFrameReceived = Packet.bytesToPacket(received.getData()).getHeader().getSeqNo();
+                    lastFrameReceived = Packet.bytesToPacket(received.getData()).getHeader().getSeqNo(); //TODO: updateLFR
                     if (queue.size() > 0) {
                         if (getClient() != null) {
                             client.packetAvailable(true);
@@ -97,6 +98,6 @@ public class Receiver extends Thread{
     private boolean checkIfPacketInsideReceiverWindow(DatagramPacket received){
         Packet receivedPacket = Packet.bytesToPacket(received.getData());
         UDPHeader header = receivedPacket.getHeader();
-        return header.getSeqNo() <= lastFrameReceived + receiverWindowSize;
+        return (Flag.isSet(Flag.DNS, header.getFlags())) || header.getSeqNo() <= lastFrameReceived + receiverWindowSize;
     }
 }

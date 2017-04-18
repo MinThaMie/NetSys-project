@@ -104,6 +104,7 @@ public class Client extends Thread {
     private static void inspectPacket(DatagramPacket received){
         Packet receivedPacket = Packet.bytesToPacket(received.getData());
         UDPHeader header = receivedPacket.getHeader();
+        mySender.setSeqandAck(Utils.updateSeqAndAck(header));
         if(Flag.isSet(Flag.DNS,header.getFlags()) && Flag.isSet(Flag.ACK, header.getFlags())){ //TODO: Is ACK response needed here?
             mySender.setDestAddress(received.getAddress());
             mySender.setDestPort(received.getPort());

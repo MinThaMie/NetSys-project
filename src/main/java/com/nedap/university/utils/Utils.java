@@ -42,17 +42,20 @@ public class Utils {
 
 
     //TODO: PROBABLY NOT NEEDED ANYMORE because i use just + 1 for my seq and acks
-    static int[] getSeqAndAck(UDPHeader header){
+    private static int[] getSeqAndAck(UDPHeader header){
         int[] result = new int[2];
         result[0] = header.getSeqNo(); //get seqNo
         result[1] = header.getAckNo(); //get ackNo
+        System.out.println("received seq and ack " + result[0] + " " + result[1]);
         return result;
     }
 
-    static int[] updateSeqAndAck(int[] array){
+    public static int[] updateSeqAndAck(UDPHeader header){
+        int[] array = getSeqAndAck(header);
         int[] result = new int[2];
         result[0] = array[1]; //Sequence number is the ack from the previous packet
         result[1] = array[0] + 1; //Ack number is the sequence number + 1
+        System.out.println("updated seq + ack" + result[0] + " " + result[1]);
         return result;
     }
 

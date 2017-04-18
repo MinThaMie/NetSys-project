@@ -12,7 +12,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.*;
 import java.util.LinkedList;
+import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentSkipListSet;
+
 
 /**
  * This class is used to send packets
@@ -26,25 +29,27 @@ class Sender extends Thread implements ITimeoutEventHandler {
     private static InetAddress destAddress;
     private boolean isSending;
     ConcurrentLinkedQueue<Packet> queue; //TODO: this assumes that there is one UDP connection
-    private static int lastAckReceived = -1;
+    ConcurrentSkipListSet<Integer> receivedAcks; // Is a list that keeps the natural order --> Acks are in order
+    private int lastAckReceived = 0;
     private static int slidingWindowSize = 5;
-    private static int lastFrameSend = -1;
+    private static int lastFrameSend = -1 ;
     private int seqNo;
     private int ackNo;
 
-
+    //TODO: create super constructor
     Sender(Client client){
         this.mySocket = client.getSocket();
         this.queue = new ConcurrentLinkedQueue<>(); //TODO: Check if this needs to be concurrent
-        this.seqNo = 0;
-        this.ackNo = 1;
+        this.receivedAcks = new ConcurrentSkipListSet<>();
+        this.seqNo = new Random().nextInt(30) + 1; //+1 because this should not be zero
+        this.ackNo = 0; //Is zero because there is no ack on the first message
+        this.lastAckReceived = seqNo;
     }
 
     Sender(Pi pi){
         this.mySocket = pi.getCommunicationSocket();
         this.queue = new ConcurrentLinkedQueue<>();
-        this.seqNo = 1;
-        this.ackNo = 2;
+        this.receivedAcks = new ConcurrentSkipListSet<>();
     }
 
     public void run(){
@@ -57,8 +62,6 @@ class Sender extends Thread implements ITimeoutEventHandler {
                     sendPacket(result);
                     setTimeOutforPacket(result);
                     lastFrameSend = result.getHeader().getSeqNo();
-                    seqNo = seqNo + 1; // this is the previous ackNo;
-                    ackNo = ackNo + 1;
                 }
             }
             try {
@@ -156,8 +159,30 @@ class Sender extends Thread implements ITimeoutEventHandler {
 
     void setReceivedAck(Packet packet){
         Timeout.stopTimeoutReceivedPacket(packet);
-        lastAckReceived = packet.getHeader().getAckNo();
+        receivedAcks.add(packet.getHeader().getAckNo());
+        updateLAR();
         System.out.println("updated lack to " + lastAckReceived);
+    }
+
+    public void updateLAR() {
+        boolean needsUpdate;
+        int oldLAR = lastAckReceived;
+        do {
+            needsUpdate = false;
+            for (Integer ackNumber : receivedAcks) {
+                if (ackNumber == lastAckReceived + 1) {
+                    lastAckReceived++;
+                    receivedAcks.remove(ackNumber);
+                    needsUpdate = true;
+                }
+            }
+        } while (needsUpdate);
+
+        //System.out.println("Updated LAR to " + LastAckReceived);
+        if(lastAckReceived > oldLAR) {
+            System.out.println("New sliding window " + (lastAckReceived + 1) + " - " + (lastAckReceived
+                    + slidingWindowSize));
+        }
     }
 
     void setDestPort(int port){
@@ -166,6 +191,22 @@ class Sender extends Thread implements ITimeoutEventHandler {
 
     void setDestAddress(InetAddress address){
         destAddress = address;
+    }
+
+    void setSeqandAck(int[] updatedSeqAndAck){
+        System.out.println("Setted seq and ack from " + this.seqNo + " " + this.ackNo);
+        this.seqNo = updatedSeqAndAck[0];
+        this.ackNo = updatedSeqAndAck[1];
+        System.out.println("to " + this.seqNo + " " + this.ackNo);
+
+    }
+
+    void setInitialSeqandAck(int[] updatedSeqAndAck){ //This function is only used by the Pi
+        System.out.println("Setted seq and ack from " + this.seqNo + " " + this.ackNo);
+        this.seqNo = new Random().nextInt(50) + 1;
+        this.ackNo = updatedSeqAndAck[1];
+        this.lastAckReceived = this.seqNo;
+        System.out.println("to " + this.seqNo + " " + this.ackNo);
     }
 
 }
