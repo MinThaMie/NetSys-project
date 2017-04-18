@@ -25,7 +25,7 @@ public class fileListTest {
 
     @Test
     public void fileListTest(){
-        assertThat(files.length, is(5));
+        assertThat(files.length, is(7));
     }
 
     @Test
