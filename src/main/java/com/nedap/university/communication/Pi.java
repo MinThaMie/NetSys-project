@@ -8,9 +8,7 @@ import com.nedap.university.utils.FilePrep;
 import com.nedap.university.utils.Statics;
 import com.nedap.university.utils.Timeout;
 import com.nedap.university.utils.Utils;
-import javafx.collections.transformation.SortedList;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.*;
@@ -88,13 +86,6 @@ public class Pi  extends Thread{
         return file.list();
     }
 
-    private static int[] getSeqAndAck(UDPHeader header){
-        int[] result = new int[2];
-        result[0] = header.getSeqNo(); //get seqNo
-        result[1] = header.getAckNo(); //get ackNo
-        return result;
-    }
-
     DatagramSocket getCommunicationSocket(){
         return communicationSocket;
     }
@@ -106,7 +97,7 @@ public class Pi  extends Thread{
     private static void inspectPacket(DatagramPacket received){
         Packet receivedPacket = Packet.bytesToPacket(received.getData());
         UDPHeader header = receivedPacket.getHeader();
-        mySender.setSeqandAck(Utils.getSeqAndAck(header)); //TODO: Check this since this is the reason for the off-by-one error
+        mySender.setSeq(header.getSeqNo()); //TODO: Check this since this is the reason for the off-by-one error
         if(Flag.isSet(Flag.DNS,header.getFlags()) && !Flag.isSet(Flag.ACK,header.getFlags())){
             myReceiver.setLastFrameReceived(header.getSeqNo());
             mySender.setInitialSeqandAck(header.getSeqNo());

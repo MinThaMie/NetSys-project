@@ -12,13 +12,12 @@ import java.util.Arrays;
  * Created by anne-greeth.vanherwijnen on 10/04/2017.
  */
 
-//TODO: Remove ackNo
 public class Packet {
     private UDPHeader header;
     private byte[] data;
 
-    public Packet(int sourceport, int destport, Flag[] flags, int seqNo, int ackNo, byte[] data){
-        this.header = new UDPHeader(sourceport,destport,Flag.setFlags(flags), seqNo, ackNo ,data);
+    public Packet(int sourceport, int destport, Flag[] flags, int seqNo, byte[] data){
+        this.header = new UDPHeader(sourceport,destport,Flag.setFlags(flags), seqNo,data);
         this.data = data;
     }
 
@@ -29,7 +28,7 @@ public class Packet {
 
     public static void main(String[] args) {
         byte[] mydata = "".getBytes();
-        Packet myPacket = new Packet( 8080, 9292, new Flag[]{Flag.ACK},1, 0, mydata);
+        Packet myPacket = new Packet( 8080, 9292, new Flag[]{Flag.ACK},1, mydata);
         Packet testPacket = bytesToPacket(getByteRepresentation(myPacket));
         testPacket.print();
     }
@@ -71,9 +70,8 @@ public class Packet {
         int udpLength = Utils.bytesToInt(Arrays.copyOfRange(header, 4, 6));
         int flags  = Utils.bytesToInt(Arrays.copyOfRange(header, 6, 7));
         int seqNo = Utils.bytesToInt(Arrays.copyOfRange(header, 7, 9));
-        int ackNo = Utils.bytesToInt(Arrays.copyOfRange(header, 9, 11));
-        int checksum = Utils.bytesToInt(Arrays.copyOfRange(header, 11, 13));
-        return new UDPHeader(sourcePort, destPort, udpLength, flags, seqNo, ackNo, checksum);
+        int checksum = Utils.bytesToInt(Arrays.copyOfRange(header, 9, 11));
+        return new UDPHeader(sourcePort, destPort, udpLength, flags, seqNo, checksum);
     }
 
     public void print(){

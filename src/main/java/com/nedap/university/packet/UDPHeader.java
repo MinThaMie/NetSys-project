@@ -15,26 +15,23 @@ public class UDPHeader{
     private int UDPlength;
     private int flags;
     private int seqNo;
-    private int ackNo;
     private int checksum;
 
-    UDPHeader(int sourceport, int destport, int flags, int seqNo, int ackNo, byte[] data){
+    UDPHeader(int sourceport, int destport, int flags, int seqNo, byte[] data){
         this.sourceport = sourceport; //16bit sourceport
         this.destport = destport; //16bit destport
         this.UDPlength = Statics.HEADERLENGHT.getValue() + data.length;//16 bit UDPlength = UDP header + data
         this.flags = flags; // 8 bits flags
         this.seqNo = seqNo; //16 bits sequence number
-        this.ackNo = ackNo; // 16 bits ack number
         this.checksum = 0; //TODO: implement
     }
 
-    UDPHeader(int sourcePort, int destPort, int udpLength, int flags, int seqNo, int ackNo, int checksum){
+    UDPHeader(int sourcePort, int destPort, int udpLength, int flags, int seqNo, int checksum){
         this.sourceport = sourcePort;
         this.destport = destPort;
         this.UDPlength = udpLength;
         this.flags = flags;
         this.seqNo = seqNo;
-        this.ackNo = ackNo;
         this.checksum = checksum;
     }
 
@@ -46,7 +43,6 @@ public class UDPHeader{
             outputStream.write((get2ByteRepresentation(UDPlength)));
             outputStream.write((getByteFlags(flags)));
             outputStream.write((get2ByteRepresentation(seqNo)));
-            outputStream.write((get2ByteRepresentation(ackNo)));
             outputStream.write((get2ByteRepresentation(checksum)));
         } catch (IOException e){
             System.out.println("Could not write this!");
@@ -85,10 +81,6 @@ public class UDPHeader{
 
     public int getSeqNo(){
         return this.seqNo;
-    }
-
-    public int getAckNo(){
-        return this.ackNo;
     }
 
     public int getChecksum(){

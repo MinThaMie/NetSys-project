@@ -16,7 +16,7 @@ public class testPacket {
     @Before
     public void Setup(){
         test = "this is a test".getBytes();
-        packet = new Packet(9292,8288,new Flag[]{Flag.ACK}, 2,3, test);
+        packet = new Packet(9292,8288,new Flag[]{Flag.ACK}, 2, test);
     }
 
     @Test

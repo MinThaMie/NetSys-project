@@ -1,6 +1,5 @@
 package com.nedap.university.communication;
 
-import com.nedap.university.communication.Sender;
 import com.nedap.university.packet.Flag;
 import com.nedap.university.packet.Packet;
 import com.nedap.university.packet.UDPHeader;
@@ -104,7 +103,7 @@ public class Client extends Thread {
     private static void inspectPacket(DatagramPacket received){
         Packet receivedPacket = Packet.bytesToPacket(received.getData());
         UDPHeader header = receivedPacket.getHeader();
-        mySender.setSeqandAck(Utils.updateSeqAndAck(header));
+        mySender.setSeq(Utils.updateSeq(header));
         if(Flag.isSet(Flag.DNS,header.getFlags()) && Flag.isSet(Flag.ACK, header.getFlags())){ //TODO: Is ACK response needed here?
             mySender.setDestAddress(received.getAddress());
             mySender.setDestPort(received.getPort());
