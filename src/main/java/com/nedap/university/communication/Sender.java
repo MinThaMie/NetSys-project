@@ -1,13 +1,12 @@
 package com.nedap.university.communication;
 
-import com.nedap.university.communication.Pi;
-import com.nedap.university.communication.Client;
 import com.nedap.university.packet.Flag;
 import com.nedap.university.packet.Packet;
 import com.nedap.university.utils.FilePrep;
 import com.nedap.university.utils.ITimeoutEventHandler;
 import com.nedap.university.utils.Statics;
 import com.nedap.university.utils.Utils;
+import com.nedap.university.utils.Timeout;
 
 import java.io.File;
 import java.io.IOException;
@@ -152,11 +151,11 @@ class Sender extends Thread implements ITimeoutEventHandler {
 
     private void setTimeOutforPacket(Packet sendPacket) {
         // schedule a timer for 1000 ms into the future, just to show how that works:
-        Utils.Timeout.SetTimeout(1000, this, sendPacket);
+        Timeout.SetTimeout(1000, this, sendPacket);
     }
 
     void setReceivedAck(Packet packet){
-        Utils.Timeout.stopTimeOut(packet);
+        Timeout.stopTimeoutReceivedPacket(packet);
         lastAckReceived = packet.getHeader().getAckNo();
         System.out.println("updated lack to " + lastAckReceived);
     }

@@ -6,6 +6,7 @@ import com.nedap.university.packet.Packet;
 import com.nedap.university.packet.UDPHeader;
 import com.nedap.university.utils.TerminalOutput;
 import com.nedap.university.utils.Utils;
+import com.nedap.university.utils.Timeout;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -37,7 +38,7 @@ public class Client extends Thread {
         TerminalOutput.welcomeMSG();
         int myPort = 7272;
         try {
-            Utils.Timeout.Start();
+            Timeout.Start();
             mySocket = new DatagramSocket(myPort);
             Client client = new Client();
             client.start();

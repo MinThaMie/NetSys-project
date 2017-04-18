@@ -29,7 +29,7 @@ public class filePrepTest {
         myData = FilePrep.getBytesFromFile(new File("/Users/anne-greeth.vanherwijnen/NetSys-project/photo1.jpg"));
         LinkedList<byte[]> choppedData = FilePrep.getBytesToPacketSize(myData);
         reassembledData = FilePrep.getFileFromByteChunks(choppedData);
-        Utils.setFileContentsClient(reassembledData, 2);
+        //Utils.setFileContentsClient(reassembledData, 2); //This is commented out because it otherwise creates a picture every build
     }
 
 
