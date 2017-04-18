@@ -11,8 +11,8 @@ import com.nedap.university.utils.Timeout;
 import java.io.File;
 import java.io.IOException;
 import java.net.*;
-import java.util.LinkedList;
-import java.util.Random;
+import java.security.NoSuchAlgorithmException;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentSkipListSet;
 
@@ -36,7 +36,6 @@ class Sender extends Thread implements ITimeoutEventHandler {
     private volatile int seqNo;
     private volatile int ackNo;
     private byte[] checksum;
-    private boolean fileSend = false;
 
     //TODO: create super constructor
     Sender(Client client){
@@ -212,6 +211,5 @@ class Sender extends Thread implements ITimeoutEventHandler {
         this.ackNo = 0;
         this.lastAckReceived = this.seqNo;
     }
-
 }
 

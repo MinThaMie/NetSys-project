@@ -33,7 +33,7 @@ public class Timeout implements Runnable {
             if(elapsedMoment != null && handler != null) {
                 if(eventHandlers.get(elapsedMoment) != null && eventHandlers.get(elapsedMoment).get(handler) != null) {
                     eventHandlers.get(elapsedMoment).get(handler).remove(packetFromList);
-                    System.out.println("Removed timeout with ackNo " + packet.getHeader().getAckNo() + " or seqNo " + packetFromList.getHeader().getSeqNo() );
+                    System.out.println("Removed timeout with seqNo " + packetFromList.getHeader().getSeqNo() );
                 }
             }
         }

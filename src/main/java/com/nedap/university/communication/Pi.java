@@ -4,16 +4,18 @@ package com.nedap.university.communication;
 import com.nedap.university.packet.Flag;
 import com.nedap.university.packet.Packet;
 import com.nedap.university.packet.UDPHeader;
+import com.nedap.university.utils.FilePrep;
 import com.nedap.university.utils.Statics;
 import com.nedap.university.utils.Timeout;
 import com.nedap.university.utils.Utils;
+import javafx.collections.transformation.SortedList;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.*;
-import java.util.Arrays;
-import java.util.Random;
+import java.security.NoSuchAlgorithmException;
+import java.util.*;
 
 /**
  * Pi class with all the functions and functionalities for the pi.
@@ -29,12 +31,13 @@ public class Pi  extends Thread{
     private static volatile boolean packetArrived = false;
     private static Receiver myReceiver;
     private static Sender mySender;
-    static ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-
+    //static ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    private static SortedMap<Integer, byte[]> allByteChunks;
 
     private Pi(){
         myReceiver = new Receiver(this);
         mySender = new Sender(this);
+        allByteChunks = new TreeMap<>();
     }
 
     public static void init(){
@@ -121,10 +124,10 @@ public class Pi  extends Thread{
             mySender.setReceivedAck(receivedPacket);
             //mySender.sendSimpleReply();
         }
-
+        System.out.println("Header value " + header.getFlags());
         if (Flag.isSet(Flag.FILES, header.getFlags()) && !Flag.isSet(Flag.FIN, header.getFlags())){
             System.out.println("received file chunk with seqNo " + header.getSeqNo());
-            receiveFileChunks(receivedPacket.getData()); //TODO: make sure this builds a good file when getting more chunks
+            receiveFileChunks(receivedPacket.getHeader().getSeqNo(),receivedPacket.getData()); //TODO: make sure this builds a good file when getting more chunks
             mySender.sendSimpleReply();
         }
 
@@ -136,16 +139,32 @@ public class Pi  extends Thread{
         //receivedPacket.print();
     }
 
-    private static void receiveFileChunks(byte[] data){ //TODO: Change this to a linkedList
-        try {
-            outputStream.write(data);
-        } catch(IOException e){
-            System.out.println("could not write to stream");
+    private static void receiveFileChunks(Integer seqNo, byte[] data){ //TODO: Change this to a linkedList
+        if (!allByteChunks.containsKey(seqNo)) {
+            allByteChunks.put(seqNo, data);
         }
     }
 
+    private static LinkedList<byte[]> mapToList(){
+        LinkedList<byte[]> theList = new LinkedList<>();
+        for(Integer key : allByteChunks.keySet()){
+            System.out.println("key " + key + " " + allByteChunks.get(key).length);
+            theList.add(allByteChunks.get(key));
+        }
+        return theList;
+    }
     private static void buildReceivedFile(byte[] receveidCheckSum){
-        byte[] calculatedChecksum = Utils.setFileContentsPi(outputStream.toByteArray(), new Random().nextInt(100));
+        int id = new Random().nextInt(100);
+        Utils.setFileContentsPi(FilePrep.getByteArrayFromByteChunks(mapToList()), id , "png");
+        byte[] calculatedChecksum = new byte[20];
+        try {
+            calculatedChecksum = Utils.createSha1(new File(String.format("home/pi/files/plaatje%d.png", id)));
+            System.out.println("Got checksum from plaatje " + id);
+        } catch (NoSuchAlgorithmException e){
+            System.out.println("No SHA");
+        } catch (IOException e){
+            System.out.println("Could not write");
+        }
         System.out.println("The receivedChecksum = " + Arrays.toString(receveidCheckSum));
         System.out.println("The calculatedChecksum = " + Arrays.toString(calculatedChecksum));
         System.out.println("The checksums are " + Utils.checkChecksum(receveidCheckSum, calculatedChecksum));

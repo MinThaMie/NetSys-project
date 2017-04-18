@@ -52,7 +52,7 @@ public class Client extends Thread {
                 if (dnsResolved) {
                     if (input.equals("files")) {
                         System.out.println("Send file");
-                        File file = new File("files/rdtcInput3.png");
+                        File file = new File("files/rdtcInput1.png");
                         mySender.sendFile(file, Utils.createSha1(file));
                     }
                 }

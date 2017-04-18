@@ -57,26 +57,20 @@ public class Utils {
         return result;
     }
 
-    public static byte[] setFileContentsPi(byte[] fileContents, int id) {
-        String filePath = String.format("/home/pi/files/plaatje%d.png", id);
-        File fileToWrite = new File(filePath); //IS piPath
+    public static void setFileContentsPi(byte[] fileContents, int id, String format) {
+        File fileToWrite;
+        if (format.equals("jpg")) {
+            fileToWrite = new File("home/pi/files/" + String.format("plaatje%d.jpg", id));//is Client path
+        } else {
+            fileToWrite = new File("home/pi/files/" + String.format("plaatje%d.png", id));//is Client path
+        }
         try (FileOutputStream fileStream = new FileOutputStream(fileToWrite)) {
             for (byte fileContent : fileContents) {
                 fileStream.write(fileContent);
             }
-        } catch (IOException e) {
-            System.out.println("Could not write the file on the pi");;
-        }
-
-        byte[] result = new byte[]{};
-        try {
-            result = createSha1(new File(filePath));
-        } catch (NoSuchAlgorithmException e){
-            System.out.println("Your algorithm is not correct");
         } catch (IOException e){
-            System.out.println("Could not write sha to stream");
+            System.out.println("Could not write the file on the client");
         }
-        return result;
     }
 
     public static void setFileContentsClient(byte[] fileContents, int id, String format) {

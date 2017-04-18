@@ -11,6 +11,8 @@ import java.util.Arrays;
  * Packet class used to build the packets, including translation to and from bytes
  * Created by anne-greeth.vanherwijnen on 10/04/2017.
  */
+
+//TODO: Remove ackNo
 public class Packet {
     private UDPHeader header;
     private byte[] data;
@@ -75,7 +77,7 @@ public class Packet {
     }
 
     public void print(){
-        System.out.println("This packet: "  + this.getHeader().getSourceport() + " " +this.getHeader().getDestport() + ", seqNo " + this.getHeader().getSeqNo() + " ackNo " + this.getHeader().getAckNo());
+        System.out.println("This packet: "  + this.getHeader().getSourceport() + " " +this.getHeader().getDestport() + ", seqNo " + this.getHeader().getSeqNo());
     }
 
 
