@@ -53,9 +53,9 @@ public class Packet {
     }
 
     public static Packet bytesToPacket(byte[] packet){
-        byte[] headerBytes = Arrays.copyOfRange(packet, 0, Statics.HEADERLENGHT.getValue());
+        byte[] headerBytes = Arrays.copyOfRange(packet, 0, Statics.HEADERLENGTH.getValue());
         UDPHeader header = headerBytesToHeader(headerBytes);
-        byte[] data = Arrays.copyOfRange(packet, Statics.HEADERLENGHT.getValue(), header.getUDPlength());
+        byte[] data = Arrays.copyOfRange(packet, Statics.HEADERLENGTH.getValue(), header.getUDPlength());
         return new Packet(header, data);
     }
 

@@ -5,8 +5,6 @@ import com.nedap.university.utils.Utils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.zip.CRC32;
-import java.util.zip.Checksum;
 
 /**
  * UDP header class to build a my own header to go on top of the data including ARQ implementation
@@ -23,7 +21,7 @@ public class UDPHeader{
     UDPHeader(int sourceport, int destport, int flags, int seqNo, byte[] data){
         this.sourceport = sourceport; //16bit sourceport
         this.destport = destport; //16bit destport
-        this.UDPlength = Statics.HEADERLENGHT.getValue() + data.length;//16 bit UDPlength = UDP header + data
+        this.UDPlength = Statics.HEADERLENGTH.getValue() + data.length;//16 bit UDPlength = UDP header + data
         this.flags = flags; // 8 bits flags
         this.seqNo = seqNo; //16 bits sequence number
         this.checksum = Utils.updCRCchecksum(getHeaderByteRepresentationWithoutChecksum(this));
@@ -55,7 +53,6 @@ public class UDPHeader{
     byte[] getHeaderByteRepresentationWithChecksum(UDPHeader header){
         byte[] bytes = getHeaderByteRepresentationWithoutChecksum(header);
         long checksum = Utils.updCRCchecksum(bytes);
-        System.out.println("checksum " + checksum);
         this.checksum = checksum;
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         try {
@@ -67,11 +64,10 @@ public class UDPHeader{
         return outputStream.toByteArray( );
     }
 
-    boolean checkChecksum(byte[] receivedChecksum, UDPHeader header){
-        byte[] headerBytes = getHeaderByteRepresentationWithoutChecksum(header);
+    public boolean checkChecksum(){
+        byte[] headerBytes = getHeaderByteRepresentationWithoutChecksum(this);
         long calculatedChecksum = Utils.updCRCchecksum(headerBytes);
-        long intReceivedChecksum = Utils.bytesToInt(receivedChecksum);
-        return calculatedChecksum == intReceivedChecksum;
+        return calculatedChecksum == this.getChecksum();
     }
 
     private byte[] get2ByteRepresentation(int value){

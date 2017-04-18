@@ -104,7 +104,6 @@ class Sender extends Thread implements ITimeoutEventHandler {
     void sendDNSReply(){
         Packet myPacket = new Packet(myPort, destPort, new Flag[]{Flag.DNS, Flag.ACK}, this.seqNo, new byte[]{});
         queue.add(myPacket);
-        System.out.println("added really to the queue " + queue.size());
     }
 
     void sendDNSAck(){
@@ -207,5 +206,6 @@ class Sender extends Thread implements ITimeoutEventHandler {
         this.seqNo = seqNo;
         this.lastAckReceived = this.seqNo;
     }
+
 }
 

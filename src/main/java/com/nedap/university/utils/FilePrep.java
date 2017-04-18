@@ -9,7 +9,7 @@ import java.util.LinkedList;
  * Created by anne-greeth.vanherwijnen on 12/04/2017.
  */
 public class FilePrep {
-    static int dataSize = Statics.PACKETSIZE.value - Statics.HEADERLENGHT.value;
+    static int dataSize = Statics.PACKETSIZE.value - Statics.HEADERLENGTH.value;
 
     static byte[] getBytesFromFile(File file){
         try {

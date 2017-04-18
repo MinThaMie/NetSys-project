@@ -34,6 +34,7 @@ public class testPacket {
     @Test
     public void testChecksum(){
         Packet testPacket = Packet.bytesToPacket(bytePacket);
+        assertTrue(testPacket.getHeader().checkChecksum());
         assertTrue(Utils.checkChecksum(packet.getHeader().getChecksum(),testPacket.getHeader().getChecksum()));
     }
 }
