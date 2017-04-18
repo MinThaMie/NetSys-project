@@ -79,7 +79,7 @@ class Sender extends Thread implements ITimeoutEventHandler {
     }
 
     private void sendPacket(Packet packet){
-        byte[] myBytes = Packet.getByteRepresentation(packet);
+        byte[] myBytes = packet.getByteRepresentation();
         try {
             mySocket.send(new DatagramPacket(myBytes, myBytes.length, destAddress, destPort));
         } catch (UnknownHostException e){
@@ -91,7 +91,7 @@ class Sender extends Thread implements ITimeoutEventHandler {
 
     void sendDNSRequest(){ //TODO: Find out if there is a way to do this also with the sendPacket function
         Packet myPacket = new Packet(myPort, Statics.BROADCASTPORT.getValue(), new Flag[]{Flag.DNS}, this.seqNo, new byte[]{});
-        byte[] myBytes = Packet.getByteRepresentation(myPacket);
+        byte[] myBytes = myPacket.getByteRepresentation();
         try {
             mySocket.send(new DatagramPacket(myBytes, myBytes.length, InetAddress.getByName(Statics.BROADCASTADDRESS.getString()), Statics.BROADCASTPORT.getValue()));
         } catch (UnknownHostException e){

@@ -9,6 +9,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.zip.CRC32;
+import java.util.zip.Checksum;
 
 /**
  * Utils class with tiny helpful functions
@@ -30,6 +32,15 @@ public class Utils {
             value = (value << 8) + (bytes[i] & 0xff); //TODO: Find out how this works
         }
         return (int) value;
+    }
+
+    public static long bytesToLong(byte[] bytes){
+        long value = 0;
+        for (int i = 0; i < bytes.length; i++)
+        {
+            value = (value << 8) + (bytes[i] & 0xff); //TODO: Find out how this works
+        }
+        return value;
     }
 
     public static String stringArrayToString(String[] sArray) {
@@ -93,5 +104,15 @@ public class Utils {
 
     public static boolean checkChecksum(byte[] checksumReceived, byte[] checksumCalculated){
         return Arrays.equals(checksumReceived, checksumCalculated);
+    }
+
+    public static boolean checkChecksum(long checksumReceived, long checksumCalculated){
+        return checksumReceived == checksumCalculated;
+    }
+
+    public static long updCRCchecksum(byte[] bytes){
+        Checksum checksum = new CRC32();
+        checksum.update(bytes,0,bytes.length);
+        return checksum.getValue();
     }
 }

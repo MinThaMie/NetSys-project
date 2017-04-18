@@ -29,20 +29,15 @@ public class Packet {
     public static void main(String[] args) {
         byte[] mydata = "".getBytes();
         Packet myPacket = new Packet( 8080, 9292, new Flag[]{Flag.ACK},1, mydata);
-        Packet testPacket = bytesToPacket(getByteRepresentation(myPacket));
+        Packet testPacket = bytesToPacket(myPacket.getByteRepresentation());
         testPacket.print();
     }
 
-
-    /**
-     * nested UPDHeader class which creates the UDPheader for the packer
-     */
-
-    public static byte[] getByteRepresentation(Packet packet){
+    public byte[] getByteRepresentation(){
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         try {
-            outputStream.write(packet.getHeader().getHeaderByteRepresentation());
-            outputStream.write(packet.getData());
+            outputStream.write(this.getHeader().getHeaderByteRepresentationWithChecksum(this.getHeader()));
+            outputStream.write(this.getData());
         } catch (IOException e){
             System.out.println("Could not write this!");
         }
@@ -70,12 +65,13 @@ public class Packet {
         int udpLength = Utils.bytesToInt(Arrays.copyOfRange(header, 4, 6));
         int flags  = Utils.bytesToInt(Arrays.copyOfRange(header, 6, 7));
         int seqNo = Utils.bytesToInt(Arrays.copyOfRange(header, 7, 9));
-        int checksum = Utils.bytesToInt(Arrays.copyOfRange(header, 9, 11));
+        long checksum = Utils.bytesToLong(Arrays.copyOfRange(header, 9, 13));
         return new UDPHeader(sourcePort, destPort, udpLength, flags, seqNo, checksum);
     }
 
     public void print(){
-        System.out.println("This packet: "  + this.getHeader().getSourceport() + " " +this.getHeader().getDestport() + ", seqNo " + this.getHeader().getSeqNo());
+        System.out.println("This packet: "  + this.getHeader().getSourceport() + " " +this.getHeader().getDestport() + ", seqNo " + this.getHeader().getSeqNo() +
+        "udpLength " + this.getHeader().getUDPlength() + '\n' + " flags " + this.getHeader().getFlags() + " checksum " + this.getHeader().getChecksum());
     }
 
 

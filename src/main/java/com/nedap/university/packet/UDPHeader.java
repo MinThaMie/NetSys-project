@@ -1,9 +1,12 @@
 package com.nedap.university.packet;
 
 import com.nedap.university.utils.Statics;
+import com.nedap.university.utils.Utils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.zip.CRC32;
+import java.util.zip.Checksum;
 
 /**
  * UDP header class to build a my own header to go on top of the data including ARQ implementation
@@ -15,7 +18,7 @@ public class UDPHeader{
     private int UDPlength;
     private int flags;
     private int seqNo;
-    private int checksum;
+    private long checksum;
 
     UDPHeader(int sourceport, int destport, int flags, int seqNo, byte[] data){
         this.sourceport = sourceport; //16bit sourceport
@@ -23,10 +26,10 @@ public class UDPHeader{
         this.UDPlength = Statics.HEADERLENGHT.getValue() + data.length;//16 bit UDPlength = UDP header + data
         this.flags = flags; // 8 bits flags
         this.seqNo = seqNo; //16 bits sequence number
-        this.checksum = 0; //TODO: implement
+        this.checksum = Utils.updCRCchecksum(getHeaderByteRepresentationWithoutChecksum(this));
     }
 
-    UDPHeader(int sourcePort, int destPort, int udpLength, int flags, int seqNo, int checksum){
+    UDPHeader(int sourcePort, int destPort, int udpLength, int flags, int seqNo, long checksum){
         this.sourceport = sourcePort;
         this.destport = destPort;
         this.UDPlength = udpLength;
@@ -35,25 +38,55 @@ public class UDPHeader{
         this.checksum = checksum;
     }
 
-    byte[] getHeaderByteRepresentation(){
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
+    private byte[] getHeaderByteRepresentationWithoutChecksum(UDPHeader header){
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         try {
-            outputStream.write((get2ByteRepresentation(sourceport)));
-            outputStream.write((get2ByteRepresentation(destport)));
-            outputStream.write((get2ByteRepresentation(UDPlength)));
-            outputStream.write((getByteFlags(flags)));
-            outputStream.write((get2ByteRepresentation(seqNo)));
-            outputStream.write((get2ByteRepresentation(checksum)));
+            outputStream.write((get2ByteRepresentation(header.getSourceport())));
+            outputStream.write((get2ByteRepresentation(header.getDestport())));
+            outputStream.write((get2ByteRepresentation(header.getUDPlength())));
+            outputStream.write((getByteFlags(header.getFlags())));
+            outputStream.write((get2ByteRepresentation(header.getSeqNo())));
         } catch (IOException e){
-            System.out.println("Could not write this!");
+            System.out.println("Could not write header without checksum!");
         }
         return outputStream.toByteArray( );
+    }
+
+    byte[] getHeaderByteRepresentationWithChecksum(UDPHeader header){
+        byte[] bytes = getHeaderByteRepresentationWithoutChecksum(header);
+        long checksum = Utils.updCRCchecksum(bytes);
+        System.out.println("checksum " + checksum);
+        this.checksum = checksum;
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        try {
+            outputStream.write(bytes);
+            outputStream.write(get4ByteRepresentation(checksum));
+        } catch (IOException e){
+            System.out.println("Could not write the header with checksum");
+        }
+        return outputStream.toByteArray( );
+    }
+
+    boolean checkChecksum(byte[] receivedChecksum, UDPHeader header){
+        byte[] headerBytes = getHeaderByteRepresentationWithoutChecksum(header);
+        long calculatedChecksum = Utils.updCRCchecksum(headerBytes);
+        long intReceivedChecksum = Utils.bytesToInt(receivedChecksum);
+        return calculatedChecksum == intReceivedChecksum;
     }
 
     private byte[] get2ByteRepresentation(int value){
         byte[] result =  new byte[2];
         result[0] = (byte) (value >> 8);
         result[1] = (byte) value;
+        return result;
+    }
+
+    private byte[] get4ByteRepresentation(long value){
+        byte[] result =  new byte[4];
+        result[0] = (byte) (value >> 24);
+        result[1] = (byte) (value >> 16);
+        result[2] = (byte) (value >> 8);
+        result[3] = (byte) value;
         return result;
     }
 
@@ -83,7 +116,7 @@ public class UDPHeader{
         return this.seqNo;
     }
 
-    public int getChecksum(){
+    public long getChecksum(){
         return this.checksum;
     }
 }
