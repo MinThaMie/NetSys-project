@@ -92,15 +92,15 @@ public class UDPHeader{
         return byteFlags;
     }
 
-    public int getSourceport(){
+    int getSourceport(){
         return this.sourceport;
     }
 
-    public int getDestport(){
+    int getDestport(){
         return this.destport;
     }
 
-    public int getUDPlength(){
+    int getUDPlength(){
         return this.UDPlength;
     }
 

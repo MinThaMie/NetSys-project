@@ -1,7 +1,5 @@
 package com.nedap.university.communication;
 
-import com.nedap.university.communication.Client;
-import com.nedap.university.communication.Pi;
 import com.nedap.university.packet.Flag;
 import com.nedap.university.packet.Packet;
 import com.nedap.university.packet.UDPHeader;
@@ -22,9 +20,8 @@ public class Receiver extends Thread{
     private Client client;
     private Pi pi;
     private DatagramSocket socket;
-    ConcurrentLinkedQueue<DatagramPacket> queue;
+    private ConcurrentLinkedQueue<DatagramPacket> queue;
     private int lastFrameReceived = -1;
-    private int receiverWindowSize = 3;
     Receiver(Client client){
         this.client = client;
         this.pi = null;
@@ -99,11 +96,7 @@ public class Receiver extends Thread{
     private boolean checkIfPacketInsideReceiverWindow(DatagramPacket received){
         Packet receivedPacket = Packet.bytesToPacket(received.getData());
         UDPHeader header = receivedPacket.getHeader();
-        if (Flag.isSet(Flag.DNS, header.getFlags())) {
-            return true;
-        }  else {
-            return header.getSeqNo() <= lastFrameReceived + receiverWindowSize;
-        }
+        return (Flag.isSet(Flag.DNS, header.getFlags())) || header.getSeqNo() <= lastFrameReceived + Statics.RECEIVERWINDOW.getValue();
     }
 
     void setLastFrameReceived(int seqNo){

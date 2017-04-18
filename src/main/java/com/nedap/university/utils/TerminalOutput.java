@@ -1,8 +1,7 @@
 package com.nedap.university.utils;
 
-import com.nedap.university.utils.Utils;
-
 /**
+ * This class enables easy terminal messages for the client.
  * Created by anne-greeth.vanherwijnen on 16/04/2017.
  */
 public class TerminalOutput {
@@ -12,7 +11,7 @@ public class TerminalOutput {
         menuMSG();
     }
 
-    public static void menuMSG(){
+    private static void menuMSG(){ //TODO: implement all these commands
         System.out.println( "You can type the following commands:" + '\n' +
             "- myFiles :to see your own files" + '\n' +
             "* piFiles :to request the files on the pi" + '\n' +

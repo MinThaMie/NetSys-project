@@ -1,14 +1,11 @@
 package com.nedap.university.utils;
 
-import com.nedap.university.packet.Packet;
 import com.nedap.university.packet.UDPHeader;
 
 import java.io.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
-import java.util.AbstractMap.SimpleEntry;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
@@ -47,7 +44,7 @@ public class Utils {
         return String.join(" ", sArray);
     }
 
-    public static String[] splitString(String toBeSplit, String splitBy){
+    static String[] splitString(String toBeSplit, String splitBy){
         return toBeSplit.split(splitBy);
     }
 
@@ -72,7 +69,7 @@ public class Utils {
         }
     }
 
-    public static void setFileContentsClient(byte[] fileContents, int id, String format) {
+    static void setFileContentsClient(byte[] fileContents, int id, String format) {
         File fileToWrite;
         if (format.equals("jpg")) {
              fileToWrite = new File("files/" + String.format("plaatje%d.jpg", id));//is Client path

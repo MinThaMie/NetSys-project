@@ -20,10 +20,6 @@ public enum Flag {
         return flagsvalue;
     }
 
-    public void receivedFlags(int receivedFlagValue){ //TODO: think of a nice way to do this?
-
-    }
-
     public static boolean isSet(Flag flag, int receivedFlagValue){
         return (receivedFlagValue & flag.value) != 0;
     }

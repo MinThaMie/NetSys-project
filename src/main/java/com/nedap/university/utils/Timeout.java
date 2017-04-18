@@ -10,7 +10,7 @@ import java.util.concurrent.locks.ReentrantLock;
  *
  * @author Jaco ter Braak & Frans van Dijk, Twente University
  * @version 09-02-2016
- * @updated by Anne-Greeth
+ * updated by Anne-Greeth
  */
 public class Timeout implements Runnable {
     private static Map<Date, Map<ITimeoutEventHandler, List<Packet>>> eventHandlers = new HashMap<>();
@@ -43,7 +43,7 @@ public class Timeout implements Runnable {
     /**
      * The seqNo of the received packet is equal to the ackNo of the send packet
      */
-    public static Packet getPacketBySeq(int seqNo){
+    private static Packet getPacketBySeq(int seqNo){
         return SeqToPacket.get(seqNo);
     }
 
@@ -69,6 +69,7 @@ public class Timeout implements Runnable {
         try {
             eventTriggerThread.join();
         } catch (InterruptedException e) {
+            System.out.println("Timeout thread is interrupted");
         }
     }
 
@@ -76,8 +77,6 @@ public class Timeout implements Runnable {
      * Set a timeout
      *  @param millisecondsTimeout
      *            the timeout interval, starting now
-     * @param handler
-     * @param packet
      */
     public static void SetTimeout(long millisecondsTimeout,
                                   ITimeoutEventHandler handler, Packet packet) {

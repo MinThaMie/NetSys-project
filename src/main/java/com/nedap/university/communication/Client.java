@@ -26,7 +26,6 @@ public class Client extends Thread {
     private static DatagramSocket mySocket;
     private static Receiver myReceiver;
     private static Sender mySender;
-    private static String filePath = "files";
 
     private Client(){
         myReceiver = new Receiver(this);

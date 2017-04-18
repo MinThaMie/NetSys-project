@@ -82,7 +82,6 @@ public class Pi  extends Thread{
     private static String[] getFiles(){
         String filePath = "files";
         File file = new File(filePath);
-        System.out.println(file.list().length);
         return file.list();
     }
 

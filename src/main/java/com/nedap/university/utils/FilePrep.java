@@ -6,10 +6,11 @@ import java.nio.file.Files;
 import java.util.LinkedList;
 
 /**
+ * This class can prep a file for sending
  * Created by anne-greeth.vanherwijnen on 12/04/2017.
  */
 public class FilePrep {
-    static int dataSize = Statics.PACKETSIZE.value - Statics.HEADERLENGTH.value;
+    private static int dataSize = Statics.PACKETSIZE.value - Statics.HEADERLENGTH.value;
 
     static byte[] getBytesFromFile(File file){
         try {
@@ -19,8 +20,7 @@ public class FilePrep {
         } catch(IOException e){
             System.out.println("The file could not be read into a byte array!");
         }
-        byte[] array = new byte[]{};
-        return array;
+        return new byte[]{};
     }
 
     static LinkedList<byte[]> getBytesToPacketSize(byte[] fileBytes){
@@ -54,8 +54,7 @@ public class FilePrep {
                 System.out.println("I could not write the bytes :(");
             }
         }
-        byte[] result = outputStream.toByteArray();
-        return result;
+        return outputStream.toByteArray();
     }
 
     public static LinkedList<byte[]> filePrep(File file){

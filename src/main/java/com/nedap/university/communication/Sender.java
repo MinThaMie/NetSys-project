@@ -5,13 +5,11 @@ import com.nedap.university.packet.Packet;
 import com.nedap.university.utils.FilePrep;
 import com.nedap.university.utils.ITimeoutEventHandler;
 import com.nedap.university.utils.Statics;
-import com.nedap.university.utils.Utils;
 import com.nedap.university.utils.Timeout;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.*;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -28,8 +26,8 @@ class Sender extends Thread implements ITimeoutEventHandler {
     private static int destPort;
     private static InetAddress destAddress;
     private boolean isSending;
-    ConcurrentLinkedQueue<Packet> queue; //TODO: this assumes that there is one UDP connection
-    ConcurrentSkipListSet<Integer> receivedAcks; // Is a list that keeps the natural order --> Acks are in order
+    private ConcurrentLinkedQueue<Packet> queue; //TODO: this assumes that there is one UDP connection
+    private ConcurrentSkipListSet<Integer> receivedAcks; // Is a list that keeps the natural order --> Acks are in order
     private int lastAckReceived = 0;
     private static int slidingWindowSize = 5;
     private static int lastFrameSend = -1 ;
@@ -137,7 +135,7 @@ class Sender extends Thread implements ITimeoutEventHandler {
             try {
                 Thread.sleep(50);
             } catch (InterruptedException e) {
-                System.out.println("I'm interrupted");;
+                System.out.println("I'm interrupted");
             }
             dataChunkPointer++;
         }

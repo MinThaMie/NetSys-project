@@ -69,7 +69,7 @@ public class Packet {
         return new UDPHeader(sourcePort, destPort, udpLength, flags, seqNo, checksum);
     }
 
-    public void print(){
+    private void print(){
         System.out.println("This packet: "  + this.getHeader().getSourceport() + " " +this.getHeader().getDestport() + ", seqNo " + this.getHeader().getSeqNo() +
         "udpLength " + this.getHeader().getUDPlength() + '\n' + " flags " + this.getHeader().getFlags() + " checksum " + this.getHeader().getChecksum());
     }
