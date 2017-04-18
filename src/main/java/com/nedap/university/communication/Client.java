@@ -52,7 +52,7 @@ public class Client extends Thread {
                 if (dnsResolved) {
                     if (input.equals("files")) {
                         System.out.println("Send file");
-                        File file = new File("photo1.jpg");
+                        File file = new File("files/rdtcInput3.png");
                         mySender.sendFile(file, Utils.createSha1(file));
                     }
                 }
@@ -109,12 +109,12 @@ public class Client extends Thread {
             mySender.setDestAddress(received.getAddress());
             mySender.setDestPort(received.getPort());
             dnsResolved = true;
-            mySender.sendDNSAck();
+            //mySender.sendDNSAck();
             TerminalOutput.DNSResolved();
         }
         if (Flag.isSet(Flag.ACK, header.getFlags()) && dnsResolved) {
             mySender.setReceivedAck(receivedPacket);
-            mySender.sendSimpleReply();
+            //mySender.sendSimpleReply();
         }
         receivedPacket.print();
     }

@@ -45,7 +45,7 @@ public class FilePrep {
         return (int) Math.ceil(fileBytes.length/(double)(dataSize));
     }
 
-    static byte[] getFileFromByteChunks(LinkedList<byte[]> receivedChunks){
+    static byte[] getByteArrayFromByteChunks(LinkedList<byte[]> receivedChunks){
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
         for(byte[] bytes : receivedChunks ){
             try {

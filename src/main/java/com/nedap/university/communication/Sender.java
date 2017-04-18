@@ -33,8 +33,10 @@ class Sender extends Thread implements ITimeoutEventHandler {
     private int lastAckReceived = 0;
     private static int slidingWindowSize = 5;
     private static int lastFrameSend = -1 ;
-    private int seqNo;
-    private int ackNo;
+    private volatile int seqNo;
+    private volatile int ackNo;
+    private byte[] checksum;
+    private boolean fileSend = false;
 
     //TODO: create super constructor
     Sender(Client client){
@@ -60,7 +62,9 @@ class Sender extends Thread implements ITimeoutEventHandler {
                 if(queue.size() > 0) {
                     Packet result = queue.remove();
                     sendPacket(result);
-                    setTimeOutforPacket(result);
+                    if (!Flag.isSet(Flag.ACK, result.getHeader().getFlags())) { //no timeout when it's an ack
+                        setTimeOutforPacket(result);
+                    }
                     lastFrameSend = result.getHeader().getSeqNo();
                 }
             }
@@ -89,7 +93,7 @@ class Sender extends Thread implements ITimeoutEventHandler {
     }
 
     void sendDNSRequest(){ //TODO: Find out if there is a way to do this also with the sendPacket function
-        Packet myPacket = new Packet(myPort, Statics.BROADCASTPORT.getValue(), new Flag[]{Flag.DNS}, this.seqNo, this.ackNo, new byte[]{});
+        Packet myPacket = new Packet(myPort, Statics.BROADCASTPORT.getValue(), new Flag[]{Flag.DNS}, this.seqNo, 0, new byte[]{});
         byte[] myBytes = Packet.getByteRepresentation(myPacket);
         try {
             mySocket.send(new DatagramPacket(myBytes, myBytes.length, InetAddress.getByName(Statics.BROADCASTADDRESS.getString()), Statics.BROADCASTPORT.getValue()));
@@ -101,70 +105,73 @@ class Sender extends Thread implements ITimeoutEventHandler {
     }
 
     void sendDNSReply(){
-        Packet myPacket = new Packet(myPort, destPort, new Flag[]{Flag.DNS, Flag.ACK}, this.seqNo, this.ackNo, new byte[]{});
+        Packet myPacket = new Packet(myPort, destPort, new Flag[]{Flag.DNS, Flag.ACK}, this.seqNo, 0, new byte[]{});
         queue.add(myPacket);
         System.out.println("added really to the queue " + queue.size());
     }
 
     void sendDNSAck(){
-        Packet myPacket = new Packet(myPort, destPort, new Flag[]{Flag.DNS, Flag.ACK}, this.seqNo, this.ackNo, new byte[]{});
+        Packet myPacket = new Packet(myPort, destPort, new Flag[]{Flag.DNS, Flag.ACK}, this.seqNo, 0, new byte[]{});
         queue.add(myPacket);
     }
 
-    void sendFileFin(byte[] checksum){
-        Packet myPacket = new Packet(myPort, destPort, new Flag[]{Flag.FILES, Flag.FIN}, this.seqNo, this.ackNo, checksum);
+    void sendFileFin(){
+        System.out.println("I'm gonna send the end");
+        this.seqNo++; //TODO: create function to increase seqNO
+        Packet myPacket = new Packet(myPort, destPort, new Flag[]{Flag.FILES, Flag.FIN}, this.seqNo, 0, this.checksum);
         queue.add(myPacket);
     }
 
     void sendFileRequest(){
-        Packet myPacket = new Packet(myPort, destPort, new Flag[]{Flag.FILES}, this.seqNo, this.ackNo, new byte[]{});
+        Packet myPacket = new Packet(myPort, destPort, new Flag[]{Flag.FILES}, this.seqNo, 0, new byte[]{});
         queue.add(myPacket);
     }
 
     void sendSimpleReply(){
-        Packet myPacket = new Packet(myPort, destPort, new Flag[]{Flag.ACK}, this.seqNo, this.ackNo, new byte[]{});
+        Packet myPacket = new Packet(myPort, destPort, new Flag[]{Flag.ACK}, this.seqNo, 0, new byte[]{});
         queue.add(myPacket);
     }
 
     void sendFile(File file, byte[] checksum){
         LinkedList<byte[]> dataChunks = FilePrep.filePrep(file);
+        this.checksum = checksum;
         int dataChunkPointer = 0;
         while(dataChunkPointer < dataChunks.size()) {
             sendFileChuck(dataChunks.get(dataChunkPointer));
             try {
                 Thread.sleep(50);
             } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+                System.out.println("I'm interrupted");;
             }
             dataChunkPointer++;
         }
-        sendFileFin(checksum);
+        sendFileFin();
     }
 
     private void sendFileChuck(byte[] fileChunk){
-        Packet myPacket = new Packet(myPort, destPort, new Flag[]{Flag.FILES}, this.seqNo, this.ackNo, fileChunk);
+        this.seqNo++;
+        Packet myPacket = new Packet(myPort, destPort, new Flag[]{Flag.FILES}, this.seqNo, 0, fileChunk);
         queue.add(myPacket);
     }
 
     public void TimeoutElapsed(Packet packet) {
         sendPacket(packet);
-        System.out.println("Resent packet with ackNo: " + packet.getHeader().getAckNo()); //Does not need to waitForAck, cause it's already waiting
+        System.out.println("Resent packet with seqNo: " + packet.getHeader().getSeqNo()); //Does not need to waitForAck, cause it's already waiting
         setTimeOutforPacket(packet);
     }
 
     private void setTimeOutforPacket(Packet sendPacket) {
         // schedule a timer for 1000 ms into the future, just to show how that works:
-        Timeout.SetTimeout(1000, this, sendPacket);
+        Timeout.SetTimeout(2000, this, sendPacket);
     }
 
     void setReceivedAck(Packet packet){
-        Timeout.stopTimeoutReceivedPacket(packet);
-        receivedAcks.add(packet.getHeader().getAckNo());
+        Timeout.stopTimeOut(packet);
+        receivedAcks.add(packet.getHeader().getSeqNo());
         updateLAR();
-        System.out.println("updated lack to " + lastAckReceived);
     }
 
-    public void updateLAR() {
+    private void updateLAR() {
         boolean needsUpdate;
         int oldLAR = lastAckReceived;
         do {
@@ -194,19 +201,16 @@ class Sender extends Thread implements ITimeoutEventHandler {
     }
 
     void setSeqandAck(int[] updatedSeqAndAck){
-        System.out.println("Setted seq and ack from " + this.seqNo + " " + this.ackNo);
         this.seqNo = updatedSeqAndAck[0];
-        this.ackNo = updatedSeqAndAck[1];
-        System.out.println("to " + this.seqNo + " " + this.ackNo);
+        this.ackNo = 0;
+        this.lastAckReceived = this.seqNo - 1;
 
     }
 
-    void setInitialSeqandAck(int[] updatedSeqAndAck){ //This function is only used by the Pi
-        System.out.println("Setted seq and ack from " + this.seqNo + " " + this.ackNo);
-        this.seqNo = new Random().nextInt(50) + 1;
-        this.ackNo = updatedSeqAndAck[1];
+    void setInitialSeqandAck(int seqNo){ //This function is only used by the Pi
+        this.seqNo = seqNo;
+        this.ackNo = 0;
         this.lastAckReceived = this.seqNo;
-        System.out.println("to " + this.seqNo + " " + this.ackNo);
     }
 
 }

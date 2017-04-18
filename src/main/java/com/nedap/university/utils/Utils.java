@@ -42,26 +42,24 @@ public class Utils {
 
 
     //TODO: PROBABLY NOT NEEDED ANYMORE because i use just + 1 for my seq and acks
-    private static int[] getSeqAndAck(UDPHeader header){
+    public static int[] getSeqAndAck(UDPHeader header){
         int[] result = new int[2];
         result[0] = header.getSeqNo(); //get seqNo
         result[1] = header.getAckNo(); //get ackNo
-        System.out.println("received seq and ack " + result[0] + " " + result[1]);
         return result;
     }
 
     public static int[] updateSeqAndAck(UDPHeader header){
         int[] array = getSeqAndAck(header);
         int[] result = new int[2];
-        result[0] = array[1]; //Sequence number is the ack from the previous packet
-        result[1] = array[0] + 1; //Ack number is the sequence number + 1
-        System.out.println("updated seq + ack" + result[0] + " " + result[1]);
+        result[0] = array[0] + 1; //Sequence number is the ack from the previous packet
+        result[1] = 0; //Ack number is the sequence number + 1
         return result;
     }
 
     public static byte[] setFileContentsPi(byte[] fileContents, int id) {
-        File fileToWrite = new File(String.format("/home/pi/files/plaatje%d.jpg", id)); //IS piPath
-        byte[] result = new byte[]{};
+        String filePath = String.format("/home/pi/files/plaatje%d.png", id);
+        File fileToWrite = new File(filePath); //IS piPath
         try (FileOutputStream fileStream = new FileOutputStream(fileToWrite)) {
             for (byte fileContent : fileContents) {
                 fileStream.write(fileContent);
@@ -69,8 +67,10 @@ public class Utils {
         } catch (IOException e) {
             System.out.println("Could not write the file on the pi");;
         }
+
+        byte[] result = new byte[]{};
         try {
-            result = createSha1(fileToWrite);
+            result = createSha1(new File(filePath));
         } catch (NoSuchAlgorithmException e){
             System.out.println("Your algorithm is not correct");
         } catch (IOException e){
@@ -79,8 +79,13 @@ public class Utils {
         return result;
     }
 
-    public static void setFileContentsClient(byte[] fileContents, int id) {
-        File fileToWrite = new File("files/" + String.format("plaatje%d.jpg", id)); //is Client path //TODO: Check if this path works
+    public static void setFileContentsClient(byte[] fileContents, int id, String format) {
+        File fileToWrite;
+        if (format.equals("jpg")) {
+             fileToWrite = new File("files/" + String.format("plaatje%d.jpg", id));//is Client path
+        } else {
+             fileToWrite = new File("files/" + String.format("plaatje%d.png", id));//is Client path
+        }
         try (FileOutputStream fileStream = new FileOutputStream(fileToWrite)) {
             for (byte fileContent : fileContents) {
                 fileStream.write(fileContent);

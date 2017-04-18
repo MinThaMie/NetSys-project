@@ -12,6 +12,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.*;
+import java.util.Arrays;
+import java.util.Random;
 
 /**
  * Pi class with all the functions and functionalities for the pi.
@@ -101,9 +103,10 @@ public class Pi  extends Thread{
     private static void inspectPacket(DatagramPacket received){
         Packet receivedPacket = Packet.bytesToPacket(received.getData());
         UDPHeader header = receivedPacket.getHeader();
-        mySender.setSeqandAck(Utils.updateSeqAndAck(header));
+        mySender.setSeqandAck(Utils.getSeqAndAck(header)); //TODO: Check this since this is the reason for the off-by-one error
         if(Flag.isSet(Flag.DNS,header.getFlags()) && !Flag.isSet(Flag.ACK,header.getFlags())){
-            mySender.setInitialSeqandAck(Utils.updateSeqAndAck(header));
+            myReceiver.setLastFrameReceived(header.getSeqNo());
+            mySender.setInitialSeqandAck(header.getSeqNo());
             System.out.println("Received DNS request and reply");
             mySender.setDestAddress(received.getAddress());
             mySender.setDestPort(received.getPort());
@@ -114,23 +117,26 @@ public class Pi  extends Thread{
             dnsIsSet = true;
         }
         if (Flag.isSet(Flag.ACK, header.getFlags())) { //Received ack, so can stop the timeout for that packet //TODO: normally no reply on Ack
+            //System.out.println("received ack");
             mySender.setReceivedAck(receivedPacket);
-            mySender.sendSimpleReply();
+            //mySender.sendSimpleReply();
         }
 
         if (Flag.isSet(Flag.FILES, header.getFlags()) && !Flag.isSet(Flag.FIN, header.getFlags())){
-            receiveFileChunks(receivedPacket.getData());
-            //int[] seqAndAck = getSeqAndAck(header);
-            //mySender.sendSimpleReply(seqAndAck);
+            System.out.println("received file chunk with seqNo " + header.getSeqNo());
+            receiveFileChunks(receivedPacket.getData()); //TODO: make sure this builds a good file when getting more chunks
+            mySender.sendSimpleReply();
         }
 
         if (Flag.isSet(Flag.FILES, header.getFlags()) && Flag.isSet(Flag.FIN, header.getFlags())){
+            //System.out.println("I received the end");
             buildReceivedFile(receivedPacket.getData());
+            mySender.sendSimpleReply();
         }
         //receivedPacket.print();
     }
 
-    static void receiveFileChunks(byte[] data){
+    private static void receiveFileChunks(byte[] data){ //TODO: Change this to a linkedList
         try {
             outputStream.write(data);
         } catch(IOException e){
@@ -138,8 +144,10 @@ public class Pi  extends Thread{
         }
     }
 
-    static void buildReceivedFile(byte[] receveidCheckSum){
-        byte[] calculatedChecksum = Utils.setFileContentsPi(outputStream.toByteArray(), 3);
+    private static void buildReceivedFile(byte[] receveidCheckSum){
+        byte[] calculatedChecksum = Utils.setFileContentsPi(outputStream.toByteArray(), new Random().nextInt(100));
+        System.out.println("The receivedChecksum = " + Arrays.toString(receveidCheckSum));
+        System.out.println("The calculatedChecksum = " + Arrays.toString(calculatedChecksum));
         System.out.println("The checksums are " + Utils.checkChecksum(receveidCheckSum, calculatedChecksum));
     }
 

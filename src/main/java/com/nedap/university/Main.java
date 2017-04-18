@@ -17,6 +17,7 @@ public class Main {
 
         if(isPi){
             Pi.init();
+            System.out.println("I'm the raspberry");
         } else {
             Client.init();
         }

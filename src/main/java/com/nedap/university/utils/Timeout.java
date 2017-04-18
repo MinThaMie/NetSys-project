@@ -15,7 +15,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class Timeout implements Runnable {
     private static Map<Date, Map<ITimeoutEventHandler, List<Packet>>> eventHandlers = new HashMap<>();
     private static Map<Packet, AbstractMap.SimpleEntry<Date,ITimeoutEventHandler>> packetToDate = new HashMap<>();
-    private static Map<Integer, Packet> AckToPacket = new HashMap<>();
+    private static Map<Integer, Packet> SeqToPacket = new HashMap<>();
     private static Thread eventTriggerThread;
     private static boolean started = false;
     private static ReentrantLock lock = new ReentrantLock();
@@ -23,26 +23,17 @@ public class Timeout implements Runnable {
     /**
      * Stop timeout of given tag (acknowledged packet)
      */
-    public static void stopTimeoutReceivedPacket(Packet receivedPacket){
-        Packet packet = getPacketBySeq(receivedPacket.getHeader().getSeqNo());
-        stopTimeOut(packet);
-    }
 
-    public static void stopTimeOutOnResend(Packet resendPacket){
-        Packet packet = getPacketByAck(resendPacket.getHeader().getAckNo());
-        stopTimeOut(packet);
-    }
 
     public static void stopTimeOut(Packet packet) {
-        if(packet != null) {
-            if(packetToDate.get(packet) != null) {
-                Date elapsedMoment = packetToDate.get(packet).getKey();
-                ITimeoutEventHandler handler = packetToDate.get(packet).getValue();
-                if(elapsedMoment != null && handler != null) {
-                    if(eventHandlers.get(elapsedMoment) != null && eventHandlers.get(elapsedMoment).get(handler) != null) {
-                        eventHandlers.get(elapsedMoment).get(handler).remove(packet);
-                        System.out.println("Removed timeout with ackNo " + packet.getHeader().getAckNo() + " or seqNo " + packet.getHeader().getSeqNo() );
-                    }
+        Packet packetFromList = getPacketBySeq(packet.getHeader().getSeqNo());
+        if(packetToDate.get(packetFromList) != null) {
+            Date elapsedMoment = packetToDate.get(packetFromList).getKey();
+            ITimeoutEventHandler handler = packetToDate.get(packetFromList).getValue();
+            if(elapsedMoment != null && handler != null) {
+                if(eventHandlers.get(elapsedMoment) != null && eventHandlers.get(elapsedMoment).get(handler) != null) {
+                    eventHandlers.get(elapsedMoment).get(handler).remove(packetFromList);
+                    System.out.println("Removed timeout with ackNo " + packet.getHeader().getAckNo() + " or seqNo " + packetFromList.getHeader().getSeqNo() );
                 }
             }
         }
@@ -53,11 +44,9 @@ public class Timeout implements Runnable {
      * The seqNo of the received packet is equal to the ackNo of the send packet
      */
     public static Packet getPacketBySeq(int seqNo){
-        return AckToPacket.get(seqNo);
+        return SeqToPacket.get(seqNo);
     }
 
-
-    public static Packet getPacketByAck(int ackNo) { return AckToPacket.get(ackNo); }
     /**
      * Starts the helper thread
      */
@@ -108,14 +97,12 @@ public class Timeout implements Runnable {
         }
         eventHandlers.get(elapsedMoment).get(handler).add(packet);//Remove time out of previous tag (if there is any)
 
-        if(packetToDate.containsKey(getPacketByAck(packet.getHeader().getAckNo()))) {
-            stopTimeOut(getPacketByAck(packet.getHeader().getAckNo()));
+        if(packetToDate.containsKey(packet)) {
+            stopTimeOut(packet);
         }
         packetToDate.put(packet, new AbstractMap.SimpleEntry<>(elapsedMoment,handler));
-        if(packetToDate.containsKey(packet)) {
-            stopTimeOutOnResend(packet);
-        }
-        AckToPacket.put(packet.getHeader().getAckNo(), packet);
+
+        SeqToPacket.put(packet.getHeader().getSeqNo(), packet);
         lock.unlock();
     }
 

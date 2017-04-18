@@ -52,7 +52,7 @@ public class Receiver extends Thread{
                 DatagramPacket received = receiveDatagramPacket();
                 if(checkIfPacketInsideReceiverWindow(received)) { //Check if the received packet is inside the receiver window, if not, the packet is not presented to the client/pi
                     queue.add(received);
-                    lastFrameReceived = Packet.bytesToPacket(received.getData()).getHeader().getSeqNo(); //TODO: updateLFR
+                    lastFrameReceived = Packet.bytesToPacket(received.getData()).getHeader().getSeqNo(); //TODO: add updateLFR
                     if (queue.size() > 0) {
                         if (getClient() != null) {
                             client.packetAvailable(true);
@@ -98,6 +98,14 @@ public class Receiver extends Thread{
     private boolean checkIfPacketInsideReceiverWindow(DatagramPacket received){
         Packet receivedPacket = Packet.bytesToPacket(received.getData());
         UDPHeader header = receivedPacket.getHeader();
-        return (Flag.isSet(Flag.DNS, header.getFlags())) || header.getSeqNo() <= lastFrameReceived + receiverWindowSize;
+        if (Flag.isSet(Flag.DNS, header.getFlags())) {
+            return true;
+        }  else {
+            return header.getSeqNo() <= lastFrameReceived + receiverWindowSize;
+        }
+    }
+
+    void setLastFrameReceived(int seqNo){
+        this.lastFrameReceived = seqNo;
     }
 }
