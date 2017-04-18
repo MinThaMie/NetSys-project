@@ -36,15 +36,15 @@ public class filePrepTest {
     @Test
     public void testAmountOf() {
         assertThat(FilePrep.amountOfPacketsNeeded(testArray1974), is(2));
-        assertThat(FilePrep.amountOfPacketsNeeded(testArray2013), is(3));
-        assertThat(FilePrep.amountOfPacketsNeeded(testArray4000), is(5));
+        assertThat(FilePrep.amountOfPacketsNeeded(testArray2013), is(2));
+        assertThat(FilePrep.amountOfPacketsNeeded(testArray4000), is(3));
     }
 
     @Test
     public void testgetPartialArrays() {
         assertThat(FilePrep.getBytesToPacketSize(testArray1974).size(), is(2));
-        assertThat(FilePrep.getBytesToPacketSize(testArray2013).size(), is(3));
-        assertThat(FilePrep.getBytesToPacketSize(testArray4000).size(), is(5));
+        assertThat(FilePrep.getBytesToPacketSize(testArray2013).size(), is(2));
+        assertThat(FilePrep.getBytesToPacketSize(testArray4000).size(), is(3));
     }
 
     @Test
