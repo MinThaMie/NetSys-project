@@ -5,6 +5,7 @@ import com.nedap.university.packet.Flag;
 import com.nedap.university.packet.Packet;
 import com.nedap.university.packet.UDPHeader;
 import com.nedap.university.utils.Statics;
+import com.nedap.university.utils.Timeout;
 import com.nedap.university.utils.Utils;
 
 import java.io.ByteArrayOutputStream;
@@ -40,6 +41,7 @@ public class Pi  extends Thread{
             isConnected = true;
             broadCastSocket = new MulticastSocket(Statics.BROADCASTPORT.getValue());
             communicationSocket = new DatagramSocket(COMMUNICATION_PORT); //TODO: maybe move this to the run method and only when there is a dnsSet
+            Timeout.Start();
             Pi pi = new Pi();
             pi.start();
             myReceiver.start();
@@ -99,7 +101,9 @@ public class Pi  extends Thread{
     private static void inspectPacket(DatagramPacket received){
         Packet receivedPacket = Packet.bytesToPacket(received.getData());
         UDPHeader header = receivedPacket.getHeader();
+        mySender.setSeqandAck(Utils.updateSeqAndAck(header));
         if(Flag.isSet(Flag.DNS,header.getFlags()) && !Flag.isSet(Flag.ACK,header.getFlags())){
+            mySender.setInitialSeqandAck(Utils.updateSeqAndAck(header));
             System.out.println("Received DNS request and reply");
             mySender.setDestAddress(received.getAddress());
             mySender.setDestPort(received.getPort());
