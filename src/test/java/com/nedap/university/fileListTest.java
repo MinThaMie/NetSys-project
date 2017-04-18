@@ -23,10 +23,10 @@ public class fileListTest {
         files = file.list();
     }
 
-    @Test
-    public void fileListTest(){
-        assertThat(files.length, is(7));
-    }
+//    @Test
+//    public void fileListTest(){
+//        assertThat(files.length, is(7));
+//    }
 
     @Test
     public void arrayToString(){

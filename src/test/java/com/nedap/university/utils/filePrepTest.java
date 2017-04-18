@@ -27,12 +27,12 @@ public class filePrepTest {
     private byte[] reassembledDataPNG;
     private File originalFilePNG;
     private File reassembeldFilePNG;
-    //@Before
 //TODO: uncomment
+//    @Before
 //    public void SetUp(){
 //        originalFileJPG = new File("files/photo1.jpg");
 //        myData = FilePrep.getBytesFromFile(originalFileJPG);
-//        LinkedList<byte[]> choppedData = FilePrep.getBytesToPacketSize(myData);
+//        LinkedList<byte[]> choppedData = FilePrep.filePrep(originalFileJPG);
 //        reassembledData = FilePrep.getByteArrayFromByteChunks(choppedData);
 //        Utils.setFileContentsClient(reassembledData, 3, "jpg"); //This is commented out because it otherwise creates a picture every build
 //        reassembeldFileJPG = new File("files/plaatje3.jpg");
@@ -45,8 +45,8 @@ public class filePrepTest {
 //        Utils.setFileContentsClient(reassembledDataPNG, 3, "png"); //This is commented out because it otherwise creates a picture every build
 //        reassembeldFilePNG = new File("files/plaatje3.png");
 //    }
-
-
+//
+//
 //    @Test
 //    public void testAmountOf() {
 //        assertThat(FilePrep.amountOfPacketsNeeded(testArray1974), is(2));
@@ -65,7 +65,7 @@ public class filePrepTest {
 //    public void testChopping() { //Assumption is that the same byteArray results in the same picture :)
 //        assertArrayEquals(reassembledData,myData);
 //    }
-
+//
 //    @Test
 //    public void testCheckSumJPG() throws Exception{
 //        assertArrayEquals(Utils.createSha1(originalFileJPG), Utils.createSha1(reassembeldFileJPG));
