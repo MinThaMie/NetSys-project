@@ -5,6 +5,7 @@ import com.nedap.university.communication.Pi;
 import com.nedap.university.packet.Flag;
 import com.nedap.university.packet.Packet;
 import com.nedap.university.packet.UDPHeader;
+import com.nedap.university.utils.Statics;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -66,7 +67,7 @@ public class Receiver extends Thread{
     }
 
     private DatagramPacket receiveDatagramPacket(){
-        byte[] buf = new byte[1000];
+        byte[] buf = new byte[Statics.PACKETSIZE.getValue()];
         DatagramPacket recv = new DatagramPacket(buf, buf.length);
         try {
             socket.receive(recv);
