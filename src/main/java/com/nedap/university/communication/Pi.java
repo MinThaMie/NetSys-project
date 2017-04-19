@@ -4,10 +4,7 @@ package com.nedap.university.communication;
 import com.nedap.university.packet.Flag;
 import com.nedap.university.packet.Packet;
 import com.nedap.university.packet.UDPHeader;
-import com.nedap.university.utils.FilePrep;
-import com.nedap.university.utils.Statics;
-import com.nedap.university.utils.Timeout;
-import com.nedap.university.utils.Utils;
+import com.nedap.university.utils.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,11 +28,13 @@ public class Pi  extends Thread{
     private static Receiver myReceiver;
     private static Sender mySender;
     private static SortedMap<Integer, byte[]> allByteChunks;
+    private static Statistics myStatstics;
 
     private Pi(){
         myReceiver = new Receiver(this);
         mySender = new Sender(this);
         allByteChunks = new TreeMap<>();
+        myStatstics = new Statistics();
     }
 
     public static void init(){
@@ -146,6 +145,9 @@ public class Pi  extends Thread{
 
 
     private static void receiveFileChunks(Integer seqNo, byte[] data){
+        if (allByteChunks.size() == 0){
+            myStatstics.setStartTime(new Date());
+        }
         if (!allByteChunks.containsKey(seqNo)) {
             allByteChunks.put(seqNo, data);
         }
@@ -159,6 +161,7 @@ public class Pi  extends Thread{
         return theList;
     }
     private static void buildReceivedFile(byte[] receveidCheckSum){
+        myStatstics.setEndTime(new Date());
         int id = new Random().nextInt(100);
         Utils.setFileContentsPi(FilePrep.getByteArrayFromByteChunks(mapToList()), id , "png");
         byte[] calculatedChecksum;
@@ -167,6 +170,7 @@ public class Pi  extends Thread{
         System.out.println("The receivedChecksum = " + Arrays.toString(receveidCheckSum));
         System.out.println("The calculatedChecksum = " + Arrays.toString(calculatedChecksum));
         System.out.println("The checksums are " + Utils.checkChecksum(receveidCheckSum, calculatedChecksum));
+        myStatstics.calculateSpeed(allByteChunks.size());
         allByteChunks.clear(); //Clear the map to be ready to receive a new file
     }
 
