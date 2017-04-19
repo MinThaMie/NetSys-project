@@ -41,7 +41,7 @@ public class Utils {
         return toBeSplit.split(splitBy);
     }
 
-    public static void setFileContentsPi(byte[] fileContents, int id, String format) {
+    public static void setFileContentsPi(SortedMap<Integer, byte[]> allChunks, int id, String format) {
         File fileToWrite;
         if (format.equals("jpg")) {
             fileToWrite = new File("home/pi/files/" + String.format("plaatje%d.jpg", id));//is Client path
@@ -49,15 +49,15 @@ public class Utils {
             fileToWrite = new File("home/pi/files/" + String.format("plaatje%d.png", id));//is Client path
         }
         try (FileOutputStream fileStream = new FileOutputStream(fileToWrite)) {
-            for (byte fileContent : fileContents) {
-                fileStream.write(fileContent);
+            for (Integer key : allChunks.keySet()) {
+                fileStream.write(allChunks.get(key));
             }
         } catch (IOException e){
-            System.out.println("Could not write the file on the client");
+            System.out.println("Could not write the file on the pi");
         }
     }
 
-    public static void setFileContentsClient(byte[] fileContents, int id, String format) {
+    public static void setFileContentsClient(SortedMap<Integer, byte[]> allChunks, int id, String format) {
         File fileToWrite;
         if (format.equals("jpg")) {
              fileToWrite = new File("files/" + String.format("plaatje%d.jpg", id));//is Client path
@@ -65,8 +65,8 @@ public class Utils {
              fileToWrite = new File("files/" + String.format("plaatje%d.png", id));//is Client path
         }
         try (FileOutputStream fileStream = new FileOutputStream(fileToWrite)) {
-            for (byte fileContent : fileContents) {
-                fileStream.write(fileContent);
+            for (Integer key : allChunks.keySet()) {
+                fileStream.write(allChunks.get(key));
             }
         } catch (IOException e){
             System.out.println("Could not write the file on the client");

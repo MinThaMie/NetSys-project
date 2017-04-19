@@ -10,7 +10,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 /**
@@ -28,13 +27,13 @@ public class Pi  extends Thread{
     private static Receiver myReceiver;
     private static Sender mySender;
     private static SortedMap<Integer, byte[]> allByteChunks;
-    private static Statistics myStatstics;
+    private static Statistics myStatistics;
 
     private Pi(){
         myReceiver = new Receiver(this);
         mySender = new Sender(this);
         allByteChunks = new TreeMap<>();
-        myStatstics = new Statistics();
+        myStatistics = new Statistics();
     }
 
     public static void init(){
@@ -146,31 +145,25 @@ public class Pi  extends Thread{
 
     private static void receiveFileChunks(Integer seqNo, byte[] data){
         if (allByteChunks.size() == 0){
-            myStatstics.setStartTime(new Date());
+            myStatistics.setStartTime(new Date());
         }
         if (!allByteChunks.containsKey(seqNo)) {
             allByteChunks.put(seqNo, data);
         }
     }
 
-    private static LinkedList<byte[]> mapToList(){
-        LinkedList<byte[]> theList = new LinkedList<>();
-        for(Integer key : allByteChunks.keySet()){
-            theList.add(allByteChunks.get(key));
-        }
-        return theList;
-    }
     private static void buildReceivedFile(byte[] receveidCheckSum){
-        myStatstics.setEndTime(new Date());
+        myStatistics.setEndTime(new Date());
         int id = new Random().nextInt(100);
-        Utils.setFileContentsPi(FilePrep.getByteArrayFromByteChunks(mapToList()), id , "png");
+        Utils.setFileContentsPi(allByteChunks, id , "png");
         byte[] calculatedChecksum;
-        calculatedChecksum = Utils.createSha1(new File(String.format("home/pi/files/plaatje%d.png", id)));
+        File receivedfile = new File(String.format("home/pi/files/plaatje%d.png", id));
+        calculatedChecksum = Utils.createSha1(receivedfile);
+        myStatistics.calculateSpeed(allByteChunks.size(), receivedfile.length());
         System.out.println("Got checksum from plaatje " + id);
         System.out.println("The receivedChecksum = " + Arrays.toString(receveidCheckSum));
         System.out.println("The calculatedChecksum = " + Arrays.toString(calculatedChecksum));
         System.out.println("The checksums are " + Utils.checkChecksum(receveidCheckSum, calculatedChecksum));
-        myStatstics.calculateSpeed(allByteChunks.size());
         allByteChunks.clear(); //Clear the map to be ready to receive a new file
     }
 
