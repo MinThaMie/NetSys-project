@@ -56,7 +56,6 @@ public class Receiver extends Thread{
                 DatagramPacket received = receiveDatagramPacket();
                 if (isPacketValidToReceive(received)) { //Check if the received packet is inside the receiver window, if not, the packet is not presented to the client/pi
                     queue.add(received);
-                    //lastFrameReceived = Packet.bytesToPacket(received.getData()).getHeader().getSeqNo(); //TODO: add updateLFR
                     setReceivedFrame(Packet.bytesToPacket(received.getData()));
                     if (queue.size() > 0) {
                         if (getClient() != null) {
@@ -66,7 +65,7 @@ public class Receiver extends Thread{
                         }
                     }
                 } else {
-                    System.out.println("packet is unvalid");
+                    System.out.println("packet is invalid");
                     (Packet.bytesToPacket(received.getData())).print();
                 }
             }
@@ -118,9 +117,6 @@ public class Receiver extends Thread{
             lastFrameReceived = header.getSeqNo();
             return true;
         } else {
-            if(header.getSeqNo()< lastFrameReceived) {
-                System.out.println("is a retransmitted piece " + header.getSeqNo() + "when LFR is " + lastFrameReceived);
-            }
             return header.getSeqNo() <= lastFrameReceived + Statics.RECEIVERWINDOW.getValue();
         }
     }
@@ -143,12 +139,6 @@ public class Receiver extends Thread{
                 }
             }
         } while (needsUpdate);
-
-        //System.out.println("Updated LFR to " + lastFrameReceived);
-//        if(lastFrameReceived > oldLFR) {
-//            System.out.println("New receiving window " + (lastFrameReceived + 1) + " - " + (lastFrameReceived
-//                    + Statics.RECEIVERWINDOW.getValue()));
-//        }
     }
 
 

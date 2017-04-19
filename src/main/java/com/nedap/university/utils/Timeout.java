@@ -59,7 +59,7 @@ public class Timeout implements Runnable {
     }
 
     /**
-     * Stops the helper thread //TODO: this is never used
+     * Stops the helper thread
      */
     public static void Stop() {
         if (!started)

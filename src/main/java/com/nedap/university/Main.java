@@ -17,21 +17,10 @@ public class Main {
 
         if(isPi){
             Pi.init();
-            System.out.println("I'm the raspberry");
         } else {
             Client.init();
         }
 
-//        while (keepAlive) { //TODO: check if this code is still nessecary since it does not do anything atm
-//            try {
-//                if(isPi){
-//                   // Pi.runPi();
-//                }
-//                Thread.sleep(1000);
-//            } catch (InterruptedException e) {
-//                Thread.currentThread().interrupt();
-//            }
-//        }
         initShutdownHook();
 
         System.out.println("Stopped");

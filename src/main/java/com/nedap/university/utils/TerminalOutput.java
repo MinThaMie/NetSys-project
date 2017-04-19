@@ -11,7 +11,7 @@ public class TerminalOutput {
         menuMSG();
     }
 
-    public static void menuMSG(){ //TODO: implement all these commands
+    public static void menuMSG(){
         System.out.println( "You can type the following commands:" + '\n' +
             "- myFiles :to see your own files" + '\n' +
             "* piFiles :to request the files on the pi" + '\n' +
@@ -19,14 +19,14 @@ public class TerminalOutput {
             "* downloadFile [x] :to download a specific file that is on the pi (x represents the number shown by the command piFiles" + '\n' +
             "- shutdown to close this program" + '\n' +
             "- help :to see all these commands again" + '\n' + '\n' +
-            "You can always use the commands marked with the -. The commands marked with the * only once you are connected to the Pi.");//TODO: print that DSN has been resolved
+            "You can always use the commands marked with the -. The commands marked with the * only once you are connected to the Pi.");
     }
 
     public static void DNSResolved(){
         System.out.println("A connection has been established with the Pi, you can now use the upload, download and file request commands.");
     }
 
-    public static void showFiles(String string){ //TODO: Implement that this index can be used to retrieve the file
+    public static void showFiles(String string){
         String[] allFiles = Utils.splitString(string, " ");
         int index = 0;
         System.out.println("The files are:");
@@ -36,7 +36,7 @@ public class TerminalOutput {
         }
     }
 
-    public static void showFiles(String[] strings){ //TODO: Implement that this index can be used to retrieve the file
+    public static void showFiles(String[] strings){
         int index = 0;
         System.out.println("The files are:");
         for (String file : strings){

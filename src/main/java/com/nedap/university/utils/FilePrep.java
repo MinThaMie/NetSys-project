@@ -15,7 +15,6 @@ public class FilePrep {
     static byte[] getBytesFromFile(File file){
         try {
             byte[] fileBytes = Files.readAllBytes(file.toPath());
-            System.out.println("byte length " + fileBytes.length);
             return fileBytes;
         } catch(IOException e){
             System.out.println("The file could not be read into a byte array!");
@@ -36,7 +35,6 @@ public class FilePrep {
         int leftOverDatasize = fileBuffer.capacity() - fileBuffer.position();
         byte[] leftOver = new byte[leftOverDatasize];
         fileBuffer.get(leftOver, 0, leftOverDatasize);
-        System.out.println("leftOver " + leftOver.length);
         result.add(leftOver);
         return result;
     }
