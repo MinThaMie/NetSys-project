@@ -58,6 +58,7 @@ public class Utils {
     }
 
     public static void setFileContentsClient(SortedMap<Integer, byte[]> allChunks, int id, String format) {
+        System.out.println("gonna write a file");
         File fileToWrite;
         if (format.equals("jpg")) {
              fileToWrite = new File("files/" + String.format("plaatje%d.jpg", id));//is Client path

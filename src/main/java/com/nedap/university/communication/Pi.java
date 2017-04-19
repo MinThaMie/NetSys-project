@@ -105,6 +105,11 @@ public class Pi  extends Thread{
                 mySender.sendDNSReply();
             }
 
+            if (Flag.isSet(Flag.ABORT, header.getFlags())){
+                System.out.println("Should abort the download");
+                mySender.abortDownload();
+            }
+
             if (Flag.isSet(Flag.DNS, header.getFlags()) && Flag.isSet(Flag.ACK, header.getFlags())) {
                 dnsIsSet = true;
             }

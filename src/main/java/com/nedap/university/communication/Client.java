@@ -155,8 +155,11 @@ public class Client extends Thread {
             String selectedFile = allMyFiles[Integer.parseInt(inputArgs[1])];
             File fileToSend = new File("files/" + selectedFile);
             mySender.sendFile(fileToSend, Utils.createSha1(fileToSend));
-        } else if (input.equals("downloadFile")){
+        } else if (input.equals("downloadFile")) {
             mySender.sendFileRequest(inputArgs[1].getBytes());
+        } else if (input.equals("abort")) {
+            System.out.println("You will abort the download");
+            mySender.sendAbort();
         } else if (input.equals("help")){
             TerminalOutput.menuMSG();
         } else if (input.equals("shutdown")){

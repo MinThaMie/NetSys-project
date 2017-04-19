@@ -155,6 +155,11 @@ class Sender extends Thread implements ITimeoutEventHandler {
         prepPacketAndSetToQueue(myPacket);
     }
 
+    void sendAbort(){
+        Packet abortPacket = new Packet(myPort, destPort, new Flag[]{Flag.ABORT}, this.seqNo, new byte[]{});
+        sendPacket(abortPacket);
+    }
+
     public void TimeoutElapsed(Packet packet) {
         sendPacket(packet);
         System.out.println("Resent packet with seqNo: " + packet.getHeader().getSeqNo()); //Does not need to waitForAck, cause it's already waiting
@@ -200,10 +205,16 @@ class Sender extends Thread implements ITimeoutEventHandler {
         this.lastAckReceived = this.seqNo;
     }
 
-    void prepPacketAndSetToQueue(Packet packet){
+    private void prepPacketAndSetToQueue(Packet packet){
         this.seqNo++;
         packet.setSeqNo(this.seqNo);
         queue.add(packet);
+    }
+
+    void abortDownload(){
+        System.out.println("size before " + queue.size());
+        queue.clear();
+        System.out.println("size after " + queue.size());
     }
 
 }
