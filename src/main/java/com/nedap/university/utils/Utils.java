@@ -44,7 +44,7 @@ public class Utils {
         return String.join(" ", sArray);
     }
 
-    static String[] splitString(String toBeSplit, String splitBy){
+    public static String[] splitString(String toBeSplit, String splitBy){
         return toBeSplit.split(splitBy);
     }
 
@@ -80,18 +80,26 @@ public class Utils {
         }
     }
 
-    public static byte[] createSha1(File file) throws IOException, NoSuchAlgorithmException{ //TODO: throws is niet zo netjes, maar heeft wel als voordeel dat alles wel bestaat
-        MessageDigest digest = MessageDigest.getInstance("SHA-1");
-        InputStream fileInput = new FileInputStream(file);
-        int n = 0;
-        byte[] buffer = new byte[8192];
-        while (n != -1) {
-            n = fileInput.read(buffer);
-            if (n > 0) {
-                digest.update(buffer, 0, n);
+    public static byte[] createSha1(File file) { //TODO: throws is niet zo netjes, maar heeft wel als voordeel dat alles wel bestaat
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-1");
+            InputStream fileInput = new FileInputStream(file);
+            int n = 0;
+            byte[] buffer = new byte[8192];
+            while (n != -1) {
+                n = fileInput.read(buffer);
+                if (n > 0) {
+                    digest.update(buffer, 0, n);
+                }
             }
+            return digest.digest();
+        } catch (NoSuchAlgorithmException e){
+            System.out.println("There is no such thing as SHA-1");
+        } catch (IOException e){
+            System.out.println("I could not read or write the fileChecksum buffer");
         }
-        return digest.digest();
+        System.out.println("Something went even more wrong and I returned an empty SHA");
+        return new byte[]{};
     }
 
     public static boolean checkChecksum(byte[] checksumReceived, byte[] checksumCalculated){

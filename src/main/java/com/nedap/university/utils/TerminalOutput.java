@@ -15,7 +15,7 @@ public class TerminalOutput {
         System.out.println( "You can type the following commands:" + '\n' +
             "- myFiles :to see your own files" + '\n' +
             "* piFiles :to request the files on the pi" + '\n' +
-            "* uploadFile :to upload a file, this will show the files you can choose from to upload" + '\n' +
+            "* uploadFile [x] :to upload a file, choose the number listed when using myFiles" + '\n' +
             "* downloadFile [x] :to download a specific file that is on the pi (x represents the number shown by the command piFiles" + '\n' +
             "- shutdown to close this program" + '\n' +
             "- help :to see all these commands again" + '\n' + '\n' +

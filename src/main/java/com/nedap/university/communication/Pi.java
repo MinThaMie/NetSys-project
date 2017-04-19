@@ -154,15 +154,9 @@ public class Pi  extends Thread{
     private static void buildReceivedFile(byte[] receveidCheckSum){
         int id = new Random().nextInt(100);
         Utils.setFileContentsPi(FilePrep.getByteArrayFromByteChunks(mapToList()), id , "png");
-        byte[] calculatedChecksum = new byte[20];
-        try {
-            calculatedChecksum = Utils.createSha1(new File(String.format("home/pi/files/plaatje%d.png", id)));
-            System.out.println("Got checksum from plaatje " + id);
-        } catch (NoSuchAlgorithmException e){
-            System.out.println("No SHA");
-        } catch (IOException e){
-            System.out.println("Could not write");
-        }
+        byte[] calculatedChecksum;
+        calculatedChecksum = Utils.createSha1(new File(String.format("home/pi/files/plaatje%d.png", id)));
+        System.out.println("Got checksum from plaatje " + id);
         System.out.println("The receivedChecksum = " + Arrays.toString(receveidCheckSum));
         System.out.println("The calculatedChecksum = " + Arrays.toString(calculatedChecksum));
         System.out.println("The checksums are " + Utils.checkChecksum(receveidCheckSum, calculatedChecksum));

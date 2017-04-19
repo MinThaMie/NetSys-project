@@ -131,11 +131,18 @@ public class Client extends Thread {
         isConnected = false;
     }
 
-    private static void interpretTerminalInput(String input){
+    private static void interpretTerminalInput(String allInput){
+        String[] inputArgs = Utils.splitString(allInput, " ");
+        String input = inputArgs[0];
         if (input.equals("myFiles")) {
             TerminalOutput.showFiles(getFiles());
         } else if (input.equals("piFiles")){
             mySender.sendFileListRequest();
+        } else if (input.equals("uploadFile")){
+            String[] allMyFiles = getFiles();
+            String selectedFile = allMyFiles[Integer.parseInt(inputArgs[1])];
+            File fileToSend = new File("files/" + selectedFile);
+            mySender.sendFile(fileToSend, Utils.createSha1(fileToSend));
         }
     }
 
