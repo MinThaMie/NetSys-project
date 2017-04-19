@@ -4,6 +4,8 @@ import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.util.LinkedList;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 /**
  * This class can prep a file for sending
@@ -43,16 +45,14 @@ public class FilePrep {
         return (int) Math.ceil(fileBytes.length/(double)(dataSize));
     }
 
-    public static byte[] getByteArrayFromByteChunks(LinkedList<byte[]> receivedChunks){
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
+    public static SortedMap<Integer, byte[]> getByteMapFromByteChunks(LinkedList<byte[]> receivedChunks){
+        SortedMap<Integer, byte[]> resultMap = new TreeMap<>();
+        int seqNo = 0;
         for(byte[] bytes : receivedChunks ){
-            try {
-                outputStream.write(bytes);
-            } catch (IOException e){
-                System.out.println("I could not write the bytes :(");
-            }
+            resultMap.put(seqNo, bytes);
+            seqNo++;
         }
-        return outputStream.toByteArray();
+        return resultMap;
     }
 
     public static LinkedList<byte[]> filePrep(File file){
