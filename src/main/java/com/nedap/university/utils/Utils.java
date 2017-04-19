@@ -48,11 +48,6 @@ public class Utils {
         return toBeSplit.split(splitBy);
     }
 
-
-    public static int updateSeq(UDPHeader header){
-        return header.getSeqNo() + 1;
-    }
-
     public static void setFileContentsPi(byte[] fileContents, int id, String format) {
         File fileToWrite;
         if (format.equals("jpg")) {

@@ -115,5 +115,9 @@ public class UDPHeader{
     public long getChecksum(){
         return this.checksum;
     }
+
+    void setSeqNo(int seqNo){
+        this.seqNo = seqNo;
+    }
 }
 

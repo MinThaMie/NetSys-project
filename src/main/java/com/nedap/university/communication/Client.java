@@ -50,7 +50,7 @@ public class Client extends Thread {
                 if (dnsResolved) {
                     if (input.equals("files")) {
                         System.out.println("Send file");
-                        File file = new File("files/rdtcInput3.png");
+                        File file = new File("files/photo74.png");
                         mySender.sendFile(file, Utils.createSha1(file));
                     }
                 }
@@ -102,22 +102,23 @@ public class Client extends Thread {
     private static void inspectPacket(DatagramPacket received){
         Packet receivedPacket = Packet.bytesToPacket(received.getData());
         UDPHeader header = receivedPacket.getHeader();
-        if (header.checkChecksum()) {
-            mySender.setSeq(Utils.updateSeq(header));
-            if (Flag.isSet(Flag.DNS, header.getFlags()) && Flag.isSet(Flag.ACK, header.getFlags())) { //TODO: Is ACK response needed here?
-                mySender.setDestAddress(received.getAddress());
-                mySender.setDestPort(received.getPort());
-                dnsResolved = true;
-                //mySender.sendDNSAck();
-                TerminalOutput.DNSResolved();
-            }
-            if (Flag.isSet(Flag.ACK, header.getFlags()) && dnsResolved) {
-                mySender.setReceivedAck(receivedPacket);
-                //mySender.sendSimpleReply();
-            }
-            //receivedPacket.print();
+
+        //mySender.setSeq(header.getSeqNo());
+        if (Flag.isSet(Flag.DNS, header.getFlags()) && Flag.isSet(Flag.ACK, header.getFlags())) { //TODO: Is ACK response needed here?
+            mySender.setDestAddress(received.getAddress());
+            mySender.setDestPort(received.getPort());
+            dnsResolved = true;
+            //mySender.sendDNSAck();
+            TerminalOutput.DNSResolved();
         }
+        if (Flag.isSet(Flag.ACK, header.getFlags()) && dnsResolved) {
+            System.out.println("received ack " + header.getSeqNo());
+            mySender.setReceivedAck(receivedPacket);
+            //mySender.sendSimpleReply();
+        }
+        //receivedPacket.print();
     }
+
 
     void packetAvailable(boolean bool){
         packetArrived = bool;

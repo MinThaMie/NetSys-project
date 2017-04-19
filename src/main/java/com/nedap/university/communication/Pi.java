@@ -55,7 +55,7 @@ public class Pi  extends Thread{
 
         while(!dnsIsSet) {
             try {
-                byte[] buf = new byte[1000];
+                byte[] buf = new byte[Statics.PACKETSIZE.getValue()];
                 DatagramPacket received = new DatagramPacket(buf, buf.length);
                 broadCastSocket.receive(received);
                 inspectPacket(received);
@@ -96,8 +96,8 @@ public class Pi  extends Thread{
     private static void inspectPacket(DatagramPacket received){
         Packet receivedPacket = Packet.bytesToPacket(received.getData());
         UDPHeader header = receivedPacket.getHeader();
-        if (header.checkChecksum()) {
-            mySender.setSeq(header.getSeqNo()); //TODO: Check this since this is the reason for the off-by-one error
+
+            //mySender.setSeq(header.getSeqNo());
             if (Flag.isSet(Flag.DNS, header.getFlags()) && !Flag.isSet(Flag.ACK, header.getFlags())) {
                 myReceiver.setLastFrameReceived(header.getSeqNo());
                 mySender.setInitialSeqandAck(header.getSeqNo());
@@ -110,32 +110,29 @@ public class Pi  extends Thread{
             if (Flag.isSet(Flag.DNS, header.getFlags()) && Flag.isSet(Flag.ACK, header.getFlags())) {
                 dnsIsSet = true;
             }
-            if (Flag.isSet(Flag.ACK, header.getFlags())) { //Received ack, so can stop the timeout for that packet //TODO: normally no reply on Ack
+            if (Flag.isSet(Flag.ACK, header.getFlags())) { //Received ack, so can stop the timeout for that packet
                 //System.out.println("received ack");
                 mySender.setReceivedAck(receivedPacket);
-                //mySender.sendSimpleReply();
+                //mySender.sendSimpleReply(header.getSeqNo()); //TODO: remove this
             }
-            System.out.println("Header value " + header.getFlags());
-            if (Flag.isSet(Flag.FILES, header.getFlags()) && !Flag.isSet(Flag.FIN, header.getFlags())) {
-                System.out.println("received file chunk with seqNo " + header.getSeqNo() + " checksum " + header.getChecksum());
+         if (Flag.isSet(Flag.FILES, header.getFlags()) && !Flag.isSet(Flag.FIN, header.getFlags())) {
+                //System.out.println("received file chunk with seqNo " + header.getSeqNo() + " checksum " + header.getChecksum());
                 receiveFileChunks(receivedPacket.getHeader().getSeqNo(), receivedPacket.getData()); //TODO: make sure this builds a good file when getting more chunks
-                mySender.sendSimpleReply();
+                mySender.sendSimpleReply(header.getSeqNo());
             }
 
             if (Flag.isSet(Flag.FILES, header.getFlags()) && Flag.isSet(Flag.FIN, header.getFlags())) {
                 //System.out.println("I received the end");
                 buildReceivedFile(receivedPacket.getData());
-                mySender.sendSimpleReply();
+                mySender.sendSimpleReply(header.getSeqNo());
             }
-        } else {
-            System.out.println("received corrupt packet :(");
-        }
         //receivedPacket.print();
+
     }
+
 
     private static void receiveFileChunks(Integer seqNo, byte[] data){ //TODO: Change this to a linkedList
         if (!allByteChunks.containsKey(seqNo)) {
-            System.out.println("data " + Arrays.toString(data));
             allByteChunks.put(seqNo, data);
         }
     }
