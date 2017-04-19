@@ -117,11 +117,12 @@ public class Client extends Thread {
         }
         if (Flag.isSet(Flag.FILES, header.getFlags()) && !Flag.isSet(Flag.FIN, header.getFlags()) && !Flag.isSet(Flag.ACK, header.getFlags())) {
             receiveFileChunks(receivedPacket.getHeader().getSeqNo(), receivedPacket.getData());
+            System.out.println("received packet with seqNo " + receivedPacket.getHeader().getSeqNo());
             mySender.sendSimpleReply(header.getSeqNo());
         }
 
         if (Flag.isSet(Flag.FILES, header.getFlags()) && Flag.isSet(Flag.FIN, header.getFlags())) {
-            //System.out.println("I received the end");
+            System.out.println("I received the end");
             buildReceivedFile(receivedPacket.getData());
             mySender.sendSimpleReply(header.getSeqNo());
         }
