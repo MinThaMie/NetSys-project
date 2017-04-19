@@ -160,6 +160,12 @@ public class Client extends Thread {
             mySender.sendFile(fileToSend, Utils.createSha1(fileToSend));
         } else if (input.equals("downloadFile")){
             mySender.sendFileRequest(inputArgs[1].getBytes());
+        } else if (input.equals("help")){
+            TerminalOutput.menuMSG();
+        } else if (input.equals("shutdown")){
+            shutDown();
+        } else {
+            System.out.println("You've typed an unknown command, please type help if you don't remember the commands.");
         }
     }
 
@@ -171,7 +177,6 @@ public class Client extends Thread {
     //TODO: Reset map when receiving the next file
     private static void receiveFileChunks(Integer seqNo, byte[] data){ //TODO: Change this to a linkedList
         if (!allByteChunks.containsKey(seqNo)) {
-            System.out.println("Data " + Arrays.toString(data));
             allByteChunks.put(seqNo, data);
         }
     }
@@ -181,7 +186,6 @@ public class Client extends Thread {
         for(Integer key : allByteChunks.keySet()){
             theList.add(allByteChunks.get(key));
         }
-        System.out.println("theList size " + theList.size());
         return theList;
     }
     private static void buildReceivedFile(byte[] receveidCheckSum){

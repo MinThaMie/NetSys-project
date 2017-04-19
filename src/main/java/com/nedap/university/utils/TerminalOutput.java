@@ -11,7 +11,7 @@ public class TerminalOutput {
         menuMSG();
     }
 
-    private static void menuMSG(){ //TODO: implement all these commands
+    public static void menuMSG(){ //TODO: implement all these commands
         System.out.println( "You can type the following commands:" + '\n' +
             "- myFiles :to see your own files" + '\n' +
             "* piFiles :to request the files on the pi" + '\n' +

@@ -151,8 +151,6 @@ public class Pi  extends Thread{
 
     private static void receiveFileChunks(Integer seqNo, byte[] data){ //TODO: Change this to a linkedList
         if (!allByteChunks.containsKey(seqNo)) {
-            System.out.println("Data " + Arrays.toString(data));
-
             allByteChunks.put(seqNo, data);
         }
     }
