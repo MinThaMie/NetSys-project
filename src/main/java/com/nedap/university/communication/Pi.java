@@ -115,7 +115,14 @@ public class Pi  extends Thread{
                 mySender.setReceivedAck(receivedPacket);
                 //mySender.sendSimpleReply(header.getSeqNo()); //TODO: remove this
             }
-         if (Flag.isSet(Flag.FILES, header.getFlags()) && !Flag.isSet(Flag.FIN, header.getFlags())) {
+
+            if (Flag.isSet(Flag.FILES, header.getFlags()) && Flag.isSet(Flag.SYN, header.getFlags())){
+                String[] files = getFiles();
+                String allFilesString = Utils.stringArrayToString(files);
+                mySender.sendFileListReply(allFilesString.getBytes(), header.getSeqNo());
+            }
+
+            if (Flag.isSet(Flag.FILES, header.getFlags()) && !Flag.isSet(Flag.FIN, header.getFlags())) {
                 //System.out.println("received file chunk with seqNo " + header.getSeqNo() + " checksum " + header.getChecksum());
                 receiveFileChunks(receivedPacket.getHeader().getSeqNo(), receivedPacket.getData()); //TODO: make sure this builds a good file when getting more chunks
                 mySender.sendSimpleReply(header.getSeqNo());

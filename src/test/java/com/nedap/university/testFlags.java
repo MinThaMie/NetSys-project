@@ -16,9 +16,9 @@ public class testFlags {
 
     @Test
     public void testSetFlags() {
-        assertThat(Flag.setFlags(new Flag[]{Flag.SYN}), is(1));
-        assertThat(Flag.setFlags(new Flag[]{Flag.SYN, Flag.DNS}), is(33));
-        assertThat(Flag.setFlags(new Flag[]{Flag.SYN, Flag.FIN, Flag.ACK}), is(7));
+        assertThat(Flag.setFlags(new Flag[]{Flag.ACK}), is(2));
+        assertThat(Flag.setFlags(new Flag[]{Flag.ACK, Flag.DNS}), is(34));
+        assertThat(Flag.setFlags(new Flag[]{Flag.PAUSE, Flag.FIN, Flag.ACK}), is(22));
     }
 
     @Test

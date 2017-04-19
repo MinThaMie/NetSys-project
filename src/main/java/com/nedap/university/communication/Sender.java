@@ -115,8 +115,13 @@ class Sender extends Thread implements ITimeoutEventHandler {
         prepPacketAndSetToQueue(myPacket);
     }
 
-    void sendFileRequest(){
-        Packet myPacket = new Packet(myPort, destPort, new Flag[]{Flag.FILES}, this.seqNo, new byte[]{});
+    void sendFileListRequest(){
+        Packet myPacket = new Packet(myPort, destPort, new Flag[]{Flag.FILES, Flag.SYN}, this.seqNo, new byte[]{});
+        prepPacketAndSetToQueue(myPacket);
+    }
+
+    void sendFileListReply(byte[] data, int seqNo){
+        Packet myPacket = new Packet(myPort, destPort, new Flag[]{Flag.FILES, Flag.ACK}, seqNo, data);
         prepPacketAndSetToQueue(myPacket);
     }
 

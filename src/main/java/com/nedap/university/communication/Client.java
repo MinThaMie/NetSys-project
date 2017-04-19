@@ -7,12 +7,8 @@ import com.nedap.university.utils.FilePrep;
 import com.nedap.university.utils.TerminalOutput;
 import com.nedap.university.utils.Utils;
 import com.nedap.university.utils.Timeout;
-import com.sun.xml.internal.xsom.impl.Ref;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.*;
 import java.security.NoSuchAlgorithmException;
 
@@ -110,6 +106,15 @@ public class Client extends Thread {
             mySender.setReceivedAck(receivedPacket);
             //mySender.sendSimpleReply();
         }
+
+        if (Flag.isSet(Flag.FILES, header.getFlags()) && Flag.isSet(Flag.ACK, header.getFlags())){
+            try {
+                String fileString = new String(receivedPacket.getData(), "UTF-8");
+                TerminalOutput.showFiles(fileString);
+            } catch (UnsupportedEncodingException e){
+                System.out.println("UTF-8 is not known");
+            }
+        }
         //receivedPacket.print();
     }
 
@@ -129,6 +134,8 @@ public class Client extends Thread {
     private static void interpretTerminalInput(String input){
         if (input.equals("myFiles")) {
             TerminalOutput.showFiles(getFiles());
+        } else if (input.equals("piFiles")){
+            mySender.sendFileListRequest();
         }
     }
 
