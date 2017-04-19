@@ -183,9 +183,9 @@ public class Client extends Thread {
     private static void buildReceivedFile(byte[] receveidCheckSum){
         myStatistics.setEndTime(new Date());
         int id = new Random().nextInt(100);
-        Utils.setFileContentsPi(allByteChunks, id , "png");
+        Utils.setFileContentsClient(allByteChunks, id , "png");
         byte[] calculatedChecksum;
-        File receivedfile = new File(String.format("home/pi/files/plaatje%d.png", id));
+        File receivedfile = new File(String.format("files/plaatje%d.png", id));
         calculatedChecksum = Utils.createSha1(receivedfile);
         myStatistics.calculateSpeed(allByteChunks.size(), receivedfile.length());
         System.out.println("Got checksum from plaatje " + id);
