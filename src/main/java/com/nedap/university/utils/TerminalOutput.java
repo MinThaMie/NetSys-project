@@ -36,5 +36,14 @@ public class TerminalOutput {
         }
     }
 
+    public static void showFiles(String[] strings){ //TODO: Implement that this index can be used to retrieve the file
+        int index = 0;
+        System.out.println("The files are:");
+        for (String file : strings){
+            System.out.println("- " + file + " "  + index);
+            index++;
+        }
+    }
+
 
 }

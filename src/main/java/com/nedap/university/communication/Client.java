@@ -3,9 +3,11 @@ package com.nedap.university.communication;
 import com.nedap.university.packet.Flag;
 import com.nedap.university.packet.Packet;
 import com.nedap.university.packet.UDPHeader;
+import com.nedap.university.utils.FilePrep;
 import com.nedap.university.utils.TerminalOutput;
 import com.nedap.university.utils.Utils;
 import com.nedap.university.utils.Timeout;
+import com.sun.xml.internal.xsom.impl.Ref;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -48,11 +50,7 @@ public class Client extends Thread {
             while(isConnected){
                 String input = handleTerminalInput();
                 if (dnsResolved) {
-                    if (input.equals("files")) {
-                        System.out.println("Send file");
-                        File file = new File("files/photo74.png");
-                        mySender.sendFile(file, Utils.createSha1(file));
-                    }
+                    interpretTerminalInput(input);
                 }
                 if (input.equals("shutdown")){
                     shutDown();
@@ -60,10 +58,6 @@ public class Client extends Thread {
             }
         } catch (SocketException e ) {
             System.out.println("Socket could not be opened");
-        } catch (NoSuchAlgorithmException e){
-            System.out.println("You have provided an invalid algorithm");
-        } catch (IOException e){
-            System.out.println("IO exception from SHA");
         }
     }
 
@@ -132,5 +126,16 @@ public class Client extends Thread {
         isConnected = false;
     }
 
+    private static void interpretTerminalInput(String input){
+        if (input.equals("myFiles")) {
+            TerminalOutput.showFiles(getFiles());
+        }
+    }
+
+    private static String[] getFiles(){
+        String filePath = "files";
+        File file = new File(filePath);
+        return file.list();
+    }
 
 }

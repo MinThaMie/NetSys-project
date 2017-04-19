@@ -80,7 +80,7 @@ public class Pi  extends Thread{
     }
 
     private static String[] getFiles(){
-        String filePath = "files";
+        String filePath = "home/pi/files";
         File file = new File(filePath);
         return file.list();
     }
