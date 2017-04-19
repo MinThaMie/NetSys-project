@@ -112,7 +112,9 @@ public class Receiver extends Thread{
     }
 
     private boolean checkIfPacketInsideReceiverWindow(UDPHeader header){
-        if (Flag.isSet(Flag.DNS, header.getFlags())){
+        if (Flag.isSet(Flag.ABORT, header.getFlags())){
+            return true;
+        } else if (Flag.isSet(Flag.DNS, header.getFlags())){
             lastFrameReceived = header.getSeqNo();
             return true;
         } else {

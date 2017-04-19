@@ -5,7 +5,7 @@ package com.nedap.university.packet;
  * Created by anne-greeth.vanherwijnen on 11/04/2017.
  */
 public enum Flag {
-    SYN(1), ACK(2), FIN(4), FILES(8), PAUSE(16), DNS(32), REQUEST(64);
+    SYN(1), ACK(2), FIN(4), FILES(8), PAUSE(16), DNS(32), REQUEST(64), ABORT(128);
     int value;
 
     Flag(int value){
