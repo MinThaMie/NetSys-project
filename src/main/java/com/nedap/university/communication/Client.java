@@ -193,6 +193,10 @@ public class Client extends Thread {
         System.out.println("The receivedChecksum = " + Arrays.toString(receveidCheckSum));
         System.out.println("The calculatedChecksum = " + Arrays.toString(calculatedChecksum));
         System.out.println("The checksums are " + Utils.checkChecksum(receveidCheckSum, calculatedChecksum));
+        allByteChunks.clear(); //Clear the map to be ready to receive a new file
+
+        if (Utils.checkChecksum(receveidCheckSum, calculatedChecksum)){
+        }
     }
 
 }

@@ -138,6 +138,7 @@ public class Pi  extends Thread{
                 mySender.sendSimpleReply(header.getSeqNo());
             }
 
+            //TODO: implement a time-out resend for the FinACK
             if (Flag.isSet(Flag.FILES, header.getFlags()) && Flag.isSet(Flag.FIN, header.getFlags())) {
                 //System.out.println("I received the end");
                 buildReceivedFile(receivedPacket.getData());
@@ -172,6 +173,7 @@ public class Pi  extends Thread{
         System.out.println("The receivedChecksum = " + Arrays.toString(receveidCheckSum));
         System.out.println("The calculatedChecksum = " + Arrays.toString(calculatedChecksum));
         System.out.println("The checksums are " + Utils.checkChecksum(receveidCheckSum, calculatedChecksum));
+        allByteChunks.clear(); //Clear the map to be ready to receive a new file
     }
 
 }
