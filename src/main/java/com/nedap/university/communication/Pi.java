@@ -133,7 +133,7 @@ public class Pi  extends Thread{
             }
 
             if (Flag.isSet(Flag.FILES, header.getFlags()) && !Flag.isSet(Flag.FIN, header.getFlags())) {
-                receiveFileChunks(receivedPacket.getHeader().getSeqNo(), receivedPacket.getData()); //TODO: make sure this builds a good file when getting more chunks
+                receiveFileChunks(receivedPacket.getHeader().getSeqNo(), receivedPacket.getData());
                 mySender.sendSimpleReply(header.getSeqNo());
             }
 

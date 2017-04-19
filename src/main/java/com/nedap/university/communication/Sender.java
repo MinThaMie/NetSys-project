@@ -34,7 +34,6 @@ class Sender extends Thread implements ITimeoutEventHandler {
     private volatile int seqNo;
     private byte[] checksum;
 
-    //TODO: create super constructor
     Sender(Client client){
         this.mySocket = client.getSocket();
         this.queue = new ConcurrentLinkedQueue<>();
@@ -71,7 +70,7 @@ class Sender extends Thread implements ITimeoutEventHandler {
     }
 
     private void init(){
-        myPort = mySocket.getLocalPort(); //TODO: getLocalport does not work for the pi for some reason
+        myPort = mySocket.getLocalPort();
         isSending = true;
     }
 
@@ -163,7 +162,7 @@ class Sender extends Thread implements ITimeoutEventHandler {
     public void TimeoutElapsed(Packet packet) {
         sendPacket(packet);
         System.out.println("Resent packet with seqNo: " + packet.getHeader().getSeqNo()); //Does not need to waitForAck, cause it's already waiting
-        //setTimeOutforPacket(packet); //TODO: probably not nessecary since the timeout is also set on in the sendLoop
+        //setTimeOutforPacket(packet); // probably not necessary since the timeout is also set on in the sendLoop
     }
 
     private void setTimeOutforPacket(Packet sendPacket) {

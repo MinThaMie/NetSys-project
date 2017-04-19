@@ -24,7 +24,6 @@ public class Receiver extends Thread{
     private int lastFrameReceived = -1;
     private ConcurrentLinkedQueue<Integer> receivedFrames;
 
-    //TODO: create super
     Receiver(Client client){
         this.client = client;
         this.pi = null;
