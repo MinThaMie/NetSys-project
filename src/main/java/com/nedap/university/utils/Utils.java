@@ -64,7 +64,8 @@ public class Utils {
         }
     }
 
-    static void setFileContentsClient(byte[] fileContents, int id, String format) {
+    public static void setFileContentsClient(byte[] fileContents, int id, String format) {
+        System.out.println("in fileContents " + Arrays.toString(fileContents));
         File fileToWrite;
         if (format.equals("jpg")) {
              fileToWrite = new File("files/" + String.format("plaatje%d.jpg", id));//is Client path

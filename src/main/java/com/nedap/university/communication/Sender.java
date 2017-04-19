@@ -125,6 +125,11 @@ class Sender extends Thread implements ITimeoutEventHandler {
         prepPacketAndSetToQueue(myPacket);
     }
 
+    void sendFileRequest(byte[] data){
+        Packet myPacket = new Packet(myPort, destPort, new Flag[]{Flag.FILES, Flag.REQUEST}, this.seqNo, data);
+        prepPacketAndSetToQueue(myPacket);
+    }
+
     void sendSimpleReply(int seqNo){
         Packet myPacket = new Packet(myPort, destPort, new Flag[]{Flag.ACK}, seqNo, new byte[]{});
         System.out.println("send ack with seqNo " + seqNo);
@@ -148,6 +153,7 @@ class Sender extends Thread implements ITimeoutEventHandler {
     }
 
     private void sendFileChuck(byte[] fileChunk){
+        System.out.println("filechunk " + Arrays.toString(fileChunk));
         Packet myPacket = new Packet(myPort, destPort, new Flag[]{Flag.FILES}, this.seqNo, fileChunk);
         prepPacketAndSetToQueue(myPacket);
     }

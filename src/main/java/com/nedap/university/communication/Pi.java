@@ -12,6 +12,7 @@ import com.nedap.university.utils.Utils;
 import java.io.File;
 import java.io.IOException;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
@@ -29,7 +30,6 @@ public class Pi  extends Thread{
     private static volatile boolean packetArrived = false;
     private static Receiver myReceiver;
     private static Sender mySender;
-    //static ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     private static SortedMap<Integer, byte[]> allByteChunks;
 
     private Pi(){
@@ -122,6 +122,16 @@ public class Pi  extends Thread{
                 mySender.sendFileListReply(allFilesString.getBytes(), header.getSeqNo());
             }
 
+            if (Flag.isSet(Flag.FILES, header.getFlags()) && Flag.isSet(Flag.REQUEST, header.getFlags())){
+                String[] files = getFiles();
+                int requestFileIndex = Integer.parseInt(new String(receivedPacket.getData(), StandardCharsets.UTF_8));
+                System.out.println("files length " + files.length + " requested " + requestFileIndex);
+                String selectedFile = files[requestFileIndex];
+                File fileToSend = new File("home/pi/files/" + selectedFile);
+                mySender.sendSimpleReply(header.getSeqNo());
+                mySender.sendFile(fileToSend, Utils.createSha1(fileToSend));
+            }
+
             if (Flag.isSet(Flag.FILES, header.getFlags()) && !Flag.isSet(Flag.FIN, header.getFlags())) {
                 //System.out.println("received file chunk with seqNo " + header.getSeqNo() + " checksum " + header.getChecksum());
                 receiveFileChunks(receivedPacket.getHeader().getSeqNo(), receivedPacket.getData()); //TODO: make sure this builds a good file when getting more chunks
@@ -140,6 +150,8 @@ public class Pi  extends Thread{
 
     private static void receiveFileChunks(Integer seqNo, byte[] data){ //TODO: Change this to a linkedList
         if (!allByteChunks.containsKey(seqNo)) {
+            System.out.println("Data " + Arrays.toString(data));
+
             allByteChunks.put(seqNo, data);
         }
     }
