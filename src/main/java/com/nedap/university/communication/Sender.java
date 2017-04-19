@@ -109,7 +109,7 @@ class Sender extends Thread implements ITimeoutEventHandler {
     }
 
     void sendFileFin(){
-        //System.out.println("I'm gonna send the end");
+        System.out.println("I'm gonna send the end");
         Packet myPacket = new Packet(myPort, destPort, new Flag[]{Flag.FILES, Flag.FIN}, this.seqNo, this.checksum);
         prepPacketAndSetToQueue(myPacket);
     }

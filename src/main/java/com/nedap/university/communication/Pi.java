@@ -134,9 +134,9 @@ public class Pi  extends Thread{
                 mySender.sendSimpleReply(header.getSeqNo());
             }
 
-            //TODO: implement a time-out resend for the FinACK
+            //TODO: implement a time-out resend for the FinACK //TODO: Set Fin unit to stop receiving fins
             if (Flag.isSet(Flag.FILES, header.getFlags()) && Flag.isSet(Flag.FIN, header.getFlags())) {
-                //System.out.println("I received the end");
+                System.out.println("I received the end");
                 buildReceivedFile(receivedPacket.getData());
                 mySender.sendSimpleReply(header.getSeqNo());
             }
