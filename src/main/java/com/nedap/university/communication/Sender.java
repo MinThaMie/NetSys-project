@@ -26,7 +26,7 @@ class Sender extends Thread implements ITimeoutEventHandler {
     private static int destPort;
     private static InetAddress destAddress;
     private boolean isSending;
-    private ConcurrentLinkedQueue<Packet> queue; //TODO: this assumes that there is one UDP connection
+    private ConcurrentLinkedQueue<Packet> queue;
     private ConcurrentSkipListSet<Integer> receivedAcks; // Is a list that keeps the natural order --> Acks are in order
     private int lastAckReceived = 0;
     private static int slidingWindowSize = 15;
@@ -37,7 +37,7 @@ class Sender extends Thread implements ITimeoutEventHandler {
     //TODO: create super constructor
     Sender(Client client){
         this.mySocket = client.getSocket();
-        this.queue = new ConcurrentLinkedQueue<>(); //TODO: Check if this needs to be concurrent
+        this.queue = new ConcurrentLinkedQueue<>();
         this.receivedAcks = new ConcurrentSkipListSet<>();
         this.seqNo = new Random().nextInt(30) + 1; //+1 because this should not be zero
         this.lastAckReceived = seqNo;
@@ -54,7 +54,6 @@ class Sender extends Thread implements ITimeoutEventHandler {
         while(isSending) {
             while (lastFrameSend < lastAckReceived + slidingWindowSize) {
                 if(queue.size() > 0) {
-                    //System.out.println("LFS " + lastFrameSend + " LAR " + lastAckReceived + " sws " +slidingWindowSize );
                     Packet result = queue.remove();
                     sendPacket(result);
                     if (!Flag.isSet(Flag.ACK, result.getHeader().getFlags())) { //no timeout when it's an ack
@@ -87,7 +86,7 @@ class Sender extends Thread implements ITimeoutEventHandler {
         }
     }
 
-    void sendDNSRequest(){ //TODO: Find out if there is a way to do this also with the sendPacket function
+    void sendDNSRequest(){
         Packet myPacket = new Packet(myPort, Statics.BROADCASTPORT.getValue(), new Flag[]{Flag.DNS}, this.seqNo, new byte[]{});
         byte[] myBytes = myPacket.getByteRepresentation();
         try {
@@ -110,7 +109,7 @@ class Sender extends Thread implements ITimeoutEventHandler {
     }
 
     void sendFileFin(){
-        System.out.println("I'm gonna send the end");
+        //System.out.println("I'm gonna send the end");
         Packet myPacket = new Packet(myPort, destPort, new Flag[]{Flag.FILES, Flag.FIN}, this.seqNo, this.checksum);
         prepPacketAndSetToQueue(myPacket);
     }
@@ -132,7 +131,6 @@ class Sender extends Thread implements ITimeoutEventHandler {
 
     void sendSimpleReply(int seqNo){
         Packet myPacket = new Packet(myPort, destPort, new Flag[]{Flag.ACK}, seqNo, new byte[]{});
-        System.out.println("send ack with seqNo " + seqNo);
         sendPacket(myPacket); //This packet dus not need to be prepped since the seqNo comes directly from the received packet
     }
 
@@ -153,7 +151,6 @@ class Sender extends Thread implements ITimeoutEventHandler {
     }
 
     private void sendFileChuck(byte[] fileChunk){
-        System.out.println("filechunk " + Arrays.toString(fileChunk));
         Packet myPacket = new Packet(myPort, destPort, new Flag[]{Flag.FILES}, this.seqNo, fileChunk);
         prepPacketAndSetToQueue(myPacket);
     }
@@ -188,12 +185,6 @@ class Sender extends Thread implements ITimeoutEventHandler {
                 }
             }
         } while (needsUpdate);
-
-        //System.out.println("Updated LAR to " + LastAckReceived);
-//        if(lastAckReceived > oldLAR) {
-//            System.out.println("New sliding window " + (lastAckReceived + 1) + " - " + (lastAckReceived
-//                    + slidingWindowSize));
-//        }
     }
 
     void setDestPort(int port){

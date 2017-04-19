@@ -43,7 +43,7 @@ public class Pi  extends Thread{
         try{
             isConnected = true;
             broadCastSocket = new MulticastSocket(Statics.BROADCASTPORT.getValue());
-            communicationSocket = new DatagramSocket(COMMUNICATION_PORT); //TODO: maybe move this to the run method and only when there is a dnsSet
+            communicationSocket = new DatagramSocket(COMMUNICATION_PORT);
             Timeout.Start();
             Pi pi = new Pi();
             pi.start();
@@ -111,9 +111,7 @@ public class Pi  extends Thread{
                 dnsIsSet = true;
             }
             if (Flag.isSet(Flag.ACK, header.getFlags())) { //Received ack, so can stop the timeout for that packet
-                //System.out.println("received ack");
                 mySender.setReceivedAck(receivedPacket);
-                //mySender.sendSimpleReply(header.getSeqNo()); //TODO: remove this
             }
 
             if (Flag.isSet(Flag.FILES, header.getFlags()) && Flag.isSet(Flag.SYN, header.getFlags())){
@@ -125,7 +123,6 @@ public class Pi  extends Thread{
             if (Flag.isSet(Flag.FILES, header.getFlags()) && Flag.isSet(Flag.REQUEST, header.getFlags())){
                 String[] files = getFiles();
                 int requestFileIndex = Integer.parseInt(new String(receivedPacket.getData(), StandardCharsets.UTF_8));
-                System.out.println("files length " + files.length + " requested " + requestFileIndex);
                 String selectedFile = files[requestFileIndex];
                 File fileToSend = new File("home/pi/files/" + selectedFile);
                 mySender.sendSimpleReply(header.getSeqNo());
@@ -133,7 +130,6 @@ public class Pi  extends Thread{
             }
 
             if (Flag.isSet(Flag.FILES, header.getFlags()) && !Flag.isSet(Flag.FIN, header.getFlags())) {
-                //System.out.println("received file chunk with seqNo " + header.getSeqNo() + " checksum " + header.getChecksum());
                 receiveFileChunks(receivedPacket.getHeader().getSeqNo(), receivedPacket.getData()); //TODO: make sure this builds a good file when getting more chunks
                 mySender.sendSimpleReply(header.getSeqNo());
             }
@@ -149,7 +145,7 @@ public class Pi  extends Thread{
     }
 
 
-    private static void receiveFileChunks(Integer seqNo, byte[] data){ //TODO: Change this to a linkedList
+    private static void receiveFileChunks(Integer seqNo, byte[] data){
         if (!allByteChunks.containsKey(seqNo)) {
             allByteChunks.put(seqNo, data);
         }

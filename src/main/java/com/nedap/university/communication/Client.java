@@ -21,7 +21,7 @@ import java.util.*;
 public class Client extends Thread {
     private static boolean dnsResolved = false;
     private static boolean isConnected = true;
-    private static volatile boolean packetArrived = false; //volatile because receiver thread writes this one --> See report for more info //TODO:include in report
+    private static volatile boolean packetArrived = false; //volatile because receiver thread writes this one
     private static DatagramSocket mySocket;
     private static Receiver myReceiver;
     private static Sender mySender;
@@ -83,8 +83,7 @@ public class Client extends Thread {
         try {
             BufferedReader terminalIn = new BufferedReader(new InputStreamReader(
                     System.in));
-            if ((msg = terminalIn.readLine()) != null) { //TODO: check if if is correct or should be while
-                System.out.println("typed in terminal" + msg);
+            if ((msg = terminalIn.readLine()) != null) {
                 return msg;
             }
         } catch (IOException e) {
@@ -97,8 +96,7 @@ public class Client extends Thread {
         Packet receivedPacket = Packet.bytesToPacket(received.getData());
         UDPHeader header = receivedPacket.getHeader();
 
-        //mySender.setSeq(header.getSeqNo());
-        if (Flag.isSet(Flag.DNS, header.getFlags()) && Flag.isSet(Flag.ACK, header.getFlags())) { //TODO: Is ACK response needed here?
+        if (Flag.isSet(Flag.DNS, header.getFlags()) && Flag.isSet(Flag.ACK, header.getFlags())) {
             mySender.setDestAddress(received.getAddress());
             mySender.setDestPort(received.getPort());
             dnsResolved = true;
@@ -106,7 +104,6 @@ public class Client extends Thread {
             TerminalOutput.DNSResolved();
         }
         if (Flag.isSet(Flag.ACK, header.getFlags()) && dnsResolved) {
-            System.out.println("received ack " + header.getSeqNo());
             mySender.setReceivedAck(receivedPacket);
             //mySender.sendSimpleReply();
         }
@@ -120,7 +117,6 @@ public class Client extends Thread {
             }
         }
         if (Flag.isSet(Flag.FILES, header.getFlags()) && !Flag.isSet(Flag.FIN, header.getFlags()) && !Flag.isSet(Flag.ACK, header.getFlags())) {
-            //System.out.println("received file chunk with seqNo " + header.getSeqNo() + " checksum " + header.getChecksum());
             receiveFileChunks(receivedPacket.getHeader().getSeqNo(), receivedPacket.getData());
             mySender.sendSimpleReply(header.getSeqNo());
         }
@@ -144,6 +140,7 @@ public class Client extends Thread {
 
     private static void shutDown(){
         isConnected = false;
+        Timeout.Stop();
     }
 
     private static void interpretTerminalInput(String allInput){
@@ -174,8 +171,8 @@ public class Client extends Thread {
         File file = new File(filePath);
         return file.list();
     }
-    //TODO: Reset map when receiving the next file
-    private static void receiveFileChunks(Integer seqNo, byte[] data){ //TODO: Change this to a linkedList
+
+    private static void receiveFileChunks(Integer seqNo, byte[] data){
         if (!allByteChunks.containsKey(seqNo)) {
             allByteChunks.put(seqNo, data);
         }
@@ -193,7 +190,7 @@ public class Client extends Thread {
         Utils.setFileContentsClient(FilePrep.getByteArrayFromByteChunks(mapToList()), id , "png");
         byte[] calculatedChecksum;
         calculatedChecksum = Utils.createSha1(new File(String.format("files/plaatje%d.png", id)));
-        System.out.println("Got checksum from plaatje " + id);
+        System.out.println("Got checksum from file " + id);
         System.out.println("The receivedChecksum = " + Arrays.toString(receveidCheckSum));
         System.out.println("The calculatedChecksum = " + Arrays.toString(calculatedChecksum));
         System.out.println("The checksums are " + Utils.checkChecksum(receveidCheckSum, calculatedChecksum));
